@@ -1,0 +1,32 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "scripts": {
+    "lint": "prettier --check ./test/{**/*,*}.ts ./contracts/{**/*,**/**/*}.sol ",
+    "lint:fix": "prettier  --write ./test/{**/*,*}.ts ./contracts/{**/*,**/**/*}.sol",
+    "clean": "rimraf ./build/",
+    "precompile": "npm run clean",
+    "compile": "truffle compile",
+    "pretest": "npm run compile",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
+    "@truffle/hdwallet-provider": "^1.2.6",
+    "chai": "^4.2.0",
+    "ethereum-waffle": "^2.4.1",
+    "ethereumjs-util": "^6.2.0",
+    "mocha": "^6.2.2",
+    "prettier": "^2.0.4",
+    "prettier-plugin-solidity": "^1.0.0-alpha.57",
+    "rimraf": "^3.0.0",
+    "ts-node": "^8.9.0",
+    "typescript": "^3.8.3"
+  }
+}
