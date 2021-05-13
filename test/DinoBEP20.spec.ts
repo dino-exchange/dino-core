@@ -7,7 +7,7 @@ import { ecsign } from 'ethereumjs-util'
 
 import { expandTo18Decimals, getApprovalDigest } from './shared/utilities'
 
-import BEP20 from '../build/contracts/BEP20.json'
+import BEP20 from '../artifacts/contracts/test/BEP20.sol/BEP20.json'
 
 chai.use(solidity)
 

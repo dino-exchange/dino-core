@@ -7,7 +7,7 @@ import { solidity, MockProvider, createFixtureLoader } from 'ethereum-waffle'
 import { getCreate2Address } from './shared/utilities'
 import { factoryFixture } from './shared/fixtures'
 
-import DinoPair from '../build/contracts/DinoPair.json'
+import DinoPair from '../artifacts/contracts/DinoPair.sol/DinoPair.json'
 
 chai.use(solidity)
 
@@ -68,7 +68,7 @@ describe('DinoFactory', () => {
   it('createPair:gas', async () => {
     const tx = await factory.createPair(...TEST_ADDRESSES)
     const receipt = await tx.wait()
-    expect(receipt.gasUsed).to.eq(2532989)
+    expect(receipt.gasUsed).to.eq(2033048)
   })
 
   it('setFeeTo', async () => {
