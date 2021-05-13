@@ -18,10 +18,6 @@ task('accounts', 'Prints the list of accounts', async (_args, hre) => {
 const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: { default: 0 },
-    dev: { default: 1 },
-    mkt: { default: 2 },
-    pool: { default: 3 },
-    fee: { default: 4 },
   },
   networks: {
     localhost: {
@@ -44,7 +40,7 @@ const config: HardhatUserConfig = {
       live: true,
       saveDeployments: true,
     },
-    'bsc-testnet': {
+    bscTestnet: {
       chainId: 97,
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       accounts,
@@ -55,6 +51,14 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [{
       version: '0.5.16',
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 200,
+        },
+      },
+    }, {
+      version: '0.6.12',
       settings: {
         optimizer: {
           enabled: true,
