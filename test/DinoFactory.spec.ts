@@ -68,7 +68,7 @@ describe('DinoFactory', () => {
   it('createPair:gas', async () => {
     const tx = await factory.createPair(...TEST_ADDRESSES)
     const receipt = await tx.wait()
-    expect(receipt.gasUsed).to.eq(2033048)
+    expect(receipt.gasUsed).to.eq(1989528)
   })
 
   it('setFeeTo', async () => {

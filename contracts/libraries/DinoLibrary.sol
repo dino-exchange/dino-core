@@ -28,7 +28,7 @@ library DinoLibrary {
                         hex'ff',
                         factory,
                         keccak256(abi.encodePacked(token0, token1)),
-                        hex'43e5e6cef3c07b58e7531048de63c767e4305307a3ae77c449bb948fad342143' // init code hash
+                        hex'cb86b93bbd8445ae27fcc664c1656d14d299666282de3b57f9f591bba6ae1a76' // init code hash
                     )
                 )
             )

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity =0.5.16;
+pragma solidity =0.6.12;
 
 import './interfaces/IDinoBEP20.sol';
 import './libraries/SafeMath.sol';
 
-contract DinoBEP20 is IDinoBEP20 {
+contract DinoBEP20 {
     using SafeMath for uint256;
 
     string public constant name = 'Dino LPs';
@@ -25,7 +25,7 @@ contract DinoBEP20 is IDinoBEP20 {
     constructor() public {
         uint256 chainId;
         assembly {
-            chainId := chainid
+            chainId := chainid()
         }
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(

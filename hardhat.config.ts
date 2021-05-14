@@ -25,13 +25,6 @@ const config: HardhatUserConfig = {
       live: false,
       saveDeployments: true,
     },
-    ganache: {
-      chainId: 1337,
-      url: 'http://127.0.0.1:7545',
-      accounts,
-      live: false,
-      saveDeployments: true,
-    },
     bsc: {
       chainId: 56,
       gasPrice: 7000000000,
@@ -50,14 +43,6 @@ const config: HardhatUserConfig = {
   },
   solidity: {
     compilers: [{
-      version: '0.5.16',
-      settings: {
-        optimizer: {
-          enabled: true,
-          runs: 200,
-        },
-      },
-    }, {
       version: '0.6.12',
       settings: {
         optimizer: {

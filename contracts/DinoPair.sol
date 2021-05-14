@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity =0.5.16;
+pragma solidity =0.6.12;
 
 import './libraries/SafeMath.sol';
 import './libraries/UQ112x112.sol';
@@ -9,7 +9,7 @@ import './interfaces/IDinoFactory.sol';
 import './interfaces/IDinoCallee.sol';
 import './DinoBEP20.sol';
 
-contract DinoPair is IDinoPair, DinoBEP20 {
+contract DinoPair is DinoBEP20 {
     using SafeMath for uint256;
     using UQ112x112 for uint224;
 

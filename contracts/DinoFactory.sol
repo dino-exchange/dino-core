@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity =0.5.16;
+pragma solidity =0.6.12;
 
 import './interfaces/IDinoFactory.sol';
 import './DinoPair.sol';
@@ -7,11 +7,11 @@ import './DinoPair.sol';
 contract DinoFactory is IDinoFactory {
     bytes32 public constant INIT_CODE_PAIR_HASH = keccak256(abi.encodePacked(type(DinoPair).creationCode));
 
-    address public feeTo;
-    address public feeToSetter;
+    address public override feeTo;
+    address public override feeToSetter;
 
-    mapping(address => mapping(address => address)) public getPair;
-    address[] public allPairs;
+    mapping(address => mapping(address => address)) public override getPair;
+    address[] public override allPairs;
 
     event PairCreated(address indexed token0, address indexed token1, address pair, uint256);
 
@@ -19,11 +19,11 @@ contract DinoFactory is IDinoFactory {
         feeToSetter = _feeToSetter;
     }
 
-    function allPairsLength() external view returns (uint256) {
+    function allPairsLength() external override view returns (uint256) {
         return allPairs.length;
     }
 
-    function createPair(address tokenA, address tokenB) external returns (address pair) {
+    function createPair(address tokenA, address tokenB) external override returns (address pair) {
         require(tokenA != tokenB, 'Dino: IDENTICAL_ADDRESSES');
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), 'Dino: ZERO_ADDRESS');
@@ -40,12 +40,12 @@ contract DinoFactory is IDinoFactory {
         emit PairCreated(token0, token1, pair, allPairs.length);
     }
 
-    function setFeeTo(address _feeTo) external {
+    function setFeeTo(address _feeTo) external override {
         require(msg.sender == feeToSetter, 'Dino: FORBIDDEN');
         feeTo = _feeTo;
     }
 
-    function setFeeToSetter(address _feeToSetter) external {
+    function setFeeToSetter(address _feeToSetter) external override {
         require(msg.sender == feeToSetter, 'Dino: FORBIDDEN');
         feeToSetter = _feeToSetter;
     }
