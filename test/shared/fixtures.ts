@@ -4,8 +4,8 @@ import { deployContract } from 'ethereum-waffle'
 
 import { expandTo18Decimals } from './utilities'
 
-import BEP20 from '../../artifacts/contracts/test/BEP20.sol/BEP20.json'
-import WBNB from '../../artifacts/contracts/test/WBNB.sol/WBNB.json'
+import BEP20 from '../../artifacts/contracts/test/MockBEP20.sol/BEP20.json'
+import WBNB from '../../artifacts/contracts/test/MockWBNB.sol/WBNB.json'
 import DinoFactory from '../../artifacts/contracts/DinoFactory.sol/DinoFactory.json'
 import DinoPair from '../../artifacts/contracts/DinoPair.sol/DinoPair.json'
 import DinoRouter from '../../artifacts/contracts/DinoRouter.sol/DinoRouter.json'

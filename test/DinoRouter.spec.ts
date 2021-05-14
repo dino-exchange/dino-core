@@ -34,17 +34,6 @@ describe('DinoRouter', () => {
   it('getAmountsOut', async () => {
     await token0.approve(router.address, MaxUint256)
     await token1.approve(router.address, MaxUint256)
-    console.log(
-      token0.address,
-      token1.address,
-      bigNumberify(10000),
-      bigNumberify(10000),
-      0,
-      0,
-      wallet.address,
-      MaxUint256,
-      overrides
-    )
     await router.addLiquidity(
       token0.address,
       token1.address,
