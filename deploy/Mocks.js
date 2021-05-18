@@ -8,9 +8,8 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         log: true,
     })
 
-    await deploy("BEP20", {
+    await deploy("DinoToken", {
         from: deployer,
-        args: [100000000],
         log: true,
     })
 }

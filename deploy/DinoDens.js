@@ -11,7 +11,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
 
     let dinoTokenAddress;
     if (chainId === "1337") {
-        dinoTokenAddress = (await deployments.get("BEP20")).address
+        dinoTokenAddress = (await deployments.get("DinoToken")).address
     } else if (chainId in DinoToken) {
         dinoTokenAddress = DinoToken[chainId].address
     } else {

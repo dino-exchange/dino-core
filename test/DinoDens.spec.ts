@@ -1,8 +1,8 @@
-import { ethers } from "hardhat";
-import { expect } from "chai";
+import { ethers } from 'hardhat'
+import { expect } from 'chai'
 
 async function advanceBlock() {
-  return ethers.provider.send("evm_mine", [])
+  return ethers.provider.send('evm_mine', [])
 }
 
 async function advanceBlockTo(blockNumber: number) {
@@ -11,7 +11,7 @@ async function advanceBlockTo(blockNumber: number) {
   }
 }
 
-describe("DinoDens", function () {
+describe('DinoDens', function () {
   before(async function () {
     this.signers = await ethers.getSigners()
     this.alice = this.signers[0]
@@ -20,33 +20,35 @@ describe("DinoDens", function () {
     this.dev = this.signers[3]
     this.minter = this.signers[4]
 
-    this.DinoDens = await ethers.getContractFactory("DinoDens")
-    this.MockBEP20 = await ethers.getContractFactory("BEP20", this.minter)
+    this.DinoDens = await ethers.getContractFactory('DinoDens')
+    this.MockBEP20 = await ethers.getContractFactory('BEP20', this.minter)
   })
 
   beforeEach(async function () {
-    this.dino = await this.MockBEP20.deploy("Dino Token", "DINO", "10000000000")
+    this.dino = await this.MockBEP20.deploy('Dino Token', 'DINO', '10000000000')
     await this.dino.deployed()
   })
 
-  it("should set correct state variables", async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, "1000", "0", "1000")
+  it('should set correct state variables', async function () {
+    this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, '1000', '0', '1000')
     await this.dens.deployed()
 
-    await this.dino.transfer(this.dens.address, "10000000000")
+    await this.dino.transfer(this.dens.address, '10000000000')
 
     expect(await this.dens.dino()).to.equal(this.dino.address)
     expect(await this.dens.devaddr()).to.equal(this.dev.address)
-    expect(await this.dino.balanceOf(this.dens.address)).to.equal("10000000000")
+    expect(await this.dino.balanceOf(this.dens.address)).to.equal('10000000000')
   })
 
-  it("should allow dev and only dev to update dev", async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, "1000", "0", "1000")
+  it('should allow dev and only dev to update dev', async function () {
+    this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, '1000', '0', '1000')
     await this.dens.deployed()
 
     expect(await this.dens.devaddr()).to.equal(this.dev.address)
 
-    await expect(this.dens.connect(this.bob).dev(this.bob.address, { from: this.bob.address })).to.be.revertedWith("dev: wut?")
+    await expect(this.dens.connect(this.bob).dev(this.bob.address, { from: this.bob.address })).to.be.revertedWith(
+      'dev: wut?'
+    )
 
     await this.dens.connect(this.dev).dev(this.bob.address, { from: this.dev.address })
 
@@ -57,77 +59,77 @@ describe("DinoDens", function () {
     expect(await this.dens.devaddr()).to.equal(this.alice.address)
   })
 
-  context("With BEP/LP token added to the field", function () {
+  context('With BEP/LP token added to the field', function () {
     beforeEach(async function () {
-      this.lp = await this.MockBEP20.deploy("LPToken", "LP", "10000000000")
+      this.lp = await this.MockBEP20.deploy('LPToken', 'LP', '10000000000')
 
-      await this.lp.transfer(this.alice.address, "1000")
+      await this.lp.transfer(this.alice.address, '1000')
 
-      await this.lp.transfer(this.bob.address, "1000")
+      await this.lp.transfer(this.bob.address, '1000')
 
-      await this.lp.transfer(this.carol.address, "1000")
+      await this.lp.transfer(this.carol.address, '1000')
 
-      this.lp2 = await this.MockBEP20.deploy("LPToken2", "LP2", "10000000000")
+      this.lp2 = await this.MockBEP20.deploy('LPToken2', 'LP2', '10000000000')
 
-      await this.lp2.transfer(this.alice.address, "1000")
+      await this.lp2.transfer(this.alice.address, '1000')
 
-      await this.lp2.transfer(this.bob.address, "1000")
+      await this.lp2.transfer(this.bob.address, '1000')
 
-      await this.lp2.transfer(this.carol.address, "1000")
+      await this.lp2.transfer(this.carol.address, '1000')
     })
 
-    it("should allow emergency withdraw", async function () {
+    it('should allow emergency withdraw', async function () {
       // 100 per block farming rate starting at block 100 with bonus until block 1000
-      this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, "100", "100", "1000")
+      this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, '100', '100', '1000')
       await this.dens.deployed()
 
-      await this.dens.add("100", this.lp.address, true)
+      await this.dens.add('100', this.lp.address, true)
 
-      await this.lp.connect(this.bob).approve(this.dens.address, "1000")
+      await this.lp.connect(this.bob).approve(this.dens.address, '1000')
 
-      await this.dens.connect(this.bob).deposit(0, "100")
+      await this.dens.connect(this.bob).deposit(0, '100')
 
-      expect(await this.lp.balanceOf(this.bob.address)).to.equal("900")
+      expect(await this.lp.balanceOf(this.bob.address)).to.equal('900')
 
       await this.dens.connect(this.bob).emergencyWithdraw(0)
 
-      expect(await this.lp.balanceOf(this.bob.address)).to.equal("1000")
+      expect(await this.lp.balanceOf(this.bob.address)).to.equal('1000')
     })
 
-    it("should give out DINOs only after farming time", async function () {
+    it('should give out DINOs only after farming time', async function () {
       // 100 per block farming rate starting at block 100 with bonus until block 1000
-      this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, "100", "100", "1000")
+      this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, '100', '100', '1000')
       await this.dens.deployed()
 
-      await this.dino.transfer(this.dens.address, "10000000000")
+      await this.dino.transfer(this.dens.address, '10000000000')
 
-      await this.dens.add("100", this.lp.address, true)
+      await this.dens.add('100', this.lp.address, true)
 
-      await this.lp.connect(this.bob).approve(this.dens.address, "1000")
-      await this.dens.connect(this.bob).deposit(0, "100")
+      await this.lp.connect(this.bob).approve(this.dens.address, '1000')
+      await this.dens.connect(this.bob).deposit(0, '100')
       await advanceBlockTo(89)
 
-      await this.dens.connect(this.bob).deposit(0, "0") // block 90
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal("0")
+      await this.dens.connect(this.bob).deposit(0, '0') // block 90
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal('0')
       await advanceBlockTo(94)
 
-      await this.dens.connect(this.bob).deposit(0, "0") // block 95
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal("0")
+      await this.dens.connect(this.bob).deposit(0, '0') // block 95
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal('0')
       await advanceBlockTo(99)
 
-      await this.dens.connect(this.bob).deposit(0, "0") // block 100
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal("0")
+      await this.dens.connect(this.bob).deposit(0, '0') // block 100
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal('0')
       await advanceBlockTo(100)
 
-      await this.dens.connect(this.bob).deposit(0, "0") // block 101
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal("1000")
+      await this.dens.connect(this.bob).deposit(0, '0') // block 101
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal('1000')
 
       await advanceBlockTo(104)
-      await this.dens.connect(this.bob).deposit(0, "0") // block 105
+      await this.dens.connect(this.bob).deposit(0, '0') // block 105
 
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal("5000")
-      expect(await this.dino.balanceOf(this.dev.address)).to.equal("500")
-      expect(await this.dino.totalSupply()).to.equal("5500")
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal('5000')
+      expect(await this.dino.balanceOf(this.dev.address)).to.equal('500')
+      expect(await this.dino.totalSupply()).to.equal('5500')
     })
 
     // it("should not distribute SUSHIs if no one deposit", async function () {

@@ -4,7 +4,7 @@ import { deployContract } from 'ethereum-waffle'
 
 import { expandTo18Decimals } from './utilities'
 
-import BEP20 from '../../artifacts/contracts/test/MockBEP20.sol/BEP20.json'
+import BEP20 from '../../artifacts/contracts/test/MockBEP20.sol/MockBEP20.json'
 import WBNB from '../../artifacts/contracts/contrib/WBNB.sol/WBNB.json'
 import DinoFactory from '../../artifacts/contracts/DinoFactory.sol/DinoFactory.json'
 import DinoPair from '../../artifacts/contracts/DinoPair.sol/DinoPair.json'
