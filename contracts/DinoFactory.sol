@@ -19,7 +19,7 @@ contract DinoFactory is IDinoFactory {
         feeToSetter = _feeToSetter;
     }
 
-    function allPairsLength() external override view returns (uint256) {
+    function allPairsLength() external view override returns (uint256) {
         return allPairs.length;
     }
 

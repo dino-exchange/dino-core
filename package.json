@@ -5,6 +5,10 @@
   "scripts": {
     "lint": "prettier --check ./test/{**/*,*}.ts ./contracts/{**/*,**/**/*}.sol ",
     "lint:fix": "prettier  --write ./test/{**/*,*}.ts ./contracts/{**/*,**/**/*}.sol",
+    "mainnet:deploy": "hardhat --network bsc deploy",
+    "mainnet:export": "hardhat --network bsc export --export exports/bsc.json",
+    "testnet:deploy": "hardhat --network bscTestnet deploy",
+    "testnet:export": "hardhat --network bscTestnet export --export exports/bscTestnet.json",
     "compile": "hardhat compile",
     "test": "hardhat test"
   },

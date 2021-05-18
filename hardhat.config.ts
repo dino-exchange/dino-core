@@ -18,6 +18,7 @@ task('accounts', 'Prints the list of accounts', async (_args, hre) => {
 const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: { default: 0 },
+    dev: { default: 1 },
   },
   networks: {
     localhost: {
