@@ -7,11 +7,11 @@ const TOTAL_SUPPLY = BigNumber.from('10000' + DECIMALS)
 
 describe('DinoRouter', () => {
   before(async function () {
-    this.wallets = waffle.provider.getWallets();
+    this.wallets = waffle.provider.getWallets()
     this.alice = this.wallets[0]
     this.minter = this.wallets[1]
     this.dev = this.wallets[2]
-    
+
     this.DinoFactory = await ethers.getContractFactory('DinoFactory', this.minter)
     this.DinoRouter = await ethers.getContractFactory('DinoRouter', this.minter)
     this.MockBEP20 = await ethers.getContractFactory('MockBEP20', this.minter)
@@ -20,7 +20,7 @@ describe('DinoRouter', () => {
 
   beforeEach(async function () {
     this.factory = await this.DinoFactory.deploy(this.dev.address)
-    await this.factory.deployed();
+    await this.factory.deployed()
 
     let tokenA = await this.MockBEP20.deploy(TOTAL_SUPPLY)
     await tokenA.deployed()
@@ -33,17 +33,17 @@ describe('DinoRouter', () => {
 
     this.router = await this.DinoRouter.deploy(this.factory.address, tokenWBNB.address)
     await this.router.deployed()
-  
+
     await this.factory.createPair(tokenA.address, tokenB.address)
     const pairAddress = await this.factory.getPair(tokenA.address, tokenB.address)
     const pair = await ethers.getContractAt('DinoPair', pairAddress)
-  
-    const token0Address = (await pair.token0()).address
+
+    const token0Address = await pair.token0()
     this.token0 = tokenA.address === token0Address ? tokenA : tokenB
     this.token1 = tokenA.address === token0Address ? tokenB : tokenA
   })
 
-  it('getAmountsOut', async function() {
+  it('getAmountsOut', async function () {
     await this.token0.approve(this.router.address, ethers.constants.MaxUint256)
     await this.token1.approve(this.router.address, ethers.constants.MaxUint256)
     await this.router.addLiquidity(

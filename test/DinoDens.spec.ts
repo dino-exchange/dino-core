@@ -49,10 +49,10 @@ describe('DinoDens', function () {
     await expect(this.dens.connect(this.bob).dev(this.bob.address, { from: this.bob.address })).to.be.revertedWith(
       'dev: wut?'
     )
-    
+
     await this.dens.connect(this.dev).dev(this.bob.address, { from: this.dev.address })
     expect(await this.dens.devaddr()).to.equal(this.bob.address)
-    
+
     await this.dens.connect(this.bob).dev(this.alice.address, { from: this.bob.address })
     expect(await this.dens.devaddr()).to.equal(this.alice.address)
   })

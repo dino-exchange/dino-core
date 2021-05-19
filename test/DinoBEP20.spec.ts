@@ -60,7 +60,7 @@ async function getApprovalDigest(
 
 describe('DinoBEP20', () => {
   before(async function () {
-    this.wallets = waffle.provider.getWallets();
+    this.wallets = waffle.provider.getWallets()
     this.alice = this.wallets[0]
     this.minter = this.wallets[1]
     this.MockBEP20 = await ethers.getContractFactory('MockBEP20', this.minter)
