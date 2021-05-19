@@ -27,7 +27,7 @@ describe('DinoPair', () => {
     this.WBNB = await ethers.getContractFactory('WBNB', this.minter)
   })
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     this.factory = await this.DinoFactory.deploy(this.dev.address)
     await this.factory.deployed()
 
@@ -50,15 +50,15 @@ describe('DinoPair', () => {
     const token0Address = await this.pair.token0()
     this.token0 = tokenA.address === token0Address ? tokenA : tokenB
     this.token1 = tokenA.address === token0Address ? tokenB : tokenA
-    
-  this.addLiquidity = async function(token0Amount: BigNumber, token1Amount: BigNumber) {
-    await this.token0.transfer(this.pair.address, token0Amount)
-    await this.token1.transfer(this.pair.address, token1Amount)
-    await this.pair.mint(this.minter.address)
-  }
+
+    this.addLiquidity = async function (token0Amount: BigNumber, token1Amount: BigNumber) {
+      await this.token0.transfer(this.pair.address, token0Amount)
+      await this.token1.transfer(this.pair.address, token1Amount)
+      await this.pair.mint(this.minter.address)
+    }
   })
 
-  it('mint', async function() {
+  it('mint', async function () {
     const token0Amount = '1' + DECIMALS
     const token1Amount = '4' + DECIMALS
     await this.token0.transfer(this.pair.address, token0Amount)
@@ -93,9 +93,9 @@ describe('DinoPair', () => {
     [1, 100, 100, '988138378977801540'],
     [1, 1000, 1000, '997004989020957084'],
   ].map((a) => a.map((n) => (typeof n === 'string' ? BigNumber.from(n) : BigNumber.from(n + DECIMALS))))
-  
+
   swapTestCases.forEach((swapTestCase, i) => {
-    it(`getInputPrice:${i}`, async function() {
+    it(`getInputPrice:${i}`, async function () {
       const [swapAmount, token0Amount, token1Amount, expectedOutputAmount] = swapTestCase
       await this.addLiquidity(token0Amount, token1Amount)
       await this.token0.transfer(this.pair.address, swapAmount)
@@ -112,9 +112,9 @@ describe('DinoPair', () => {
     ['998000000000000000', 5, 5, 1],
     [1, 5, 5, '1002004008016032065'], // given amountOut, amountIn = ceiling(amountOut / .998)
   ].map((a) => a.map((n) => (typeof n === 'string' ? BigNumber.from(n) : BigNumber.from(n + DECIMALS))))
-  
+
   optimisticTestCases.forEach((optimisticTestCase, i) => {
-    it(`optimistic:${i}`, async function() {
+    it(`optimistic:${i}`, async function () {
       const [outputAmount, token0Amount, token1Amount, inputAmount] = optimisticTestCase
       await this.addLiquidity(token0Amount, token1Amount)
       await this.token0.transfer(this.pair.address, inputAmount)
@@ -123,7 +123,7 @@ describe('DinoPair', () => {
     })
   })
 
-  it('swap:token0', async function() {
+  it('swap:token0', async function () {
     const token0Amount = expandTo18Decimals(5)
     const token1Amount = expandTo18Decimals(10)
     await this.addLiquidity(token0Amount, token1Amount)
@@ -147,7 +147,9 @@ describe('DinoPair', () => {
     const totalSupplyToken0 = await this.token0.totalSupply()
     const totalSupplyToken1 = await this.token1.totalSupply()
     expect(await this.token0.balanceOf(this.minter.address)).to.eq(totalSupplyToken0.sub(token0Amount).sub(swapAmount))
-    expect(await this.token1.balanceOf(this.minter.address)).to.eq(totalSupplyToken1.sub(token1Amount).add(expectedOutputAmount))
+    expect(await this.token1.balanceOf(this.minter.address)).to.eq(
+      totalSupplyToken1.sub(token1Amount).add(expectedOutputAmount)
+    )
   })
 
   // it('swap:token1', async () => {
@@ -177,7 +179,7 @@ describe('DinoPair', () => {
   //   expect(await token1.balanceOf(wallet.address)).to.eq(totalSupplyToken1.sub(token1Amount).sub(swapAmount))
   // })
 
-  it('swap:gas', async function() {
+  it('swap:gas', async function () {
     const token0Amount = expandTo18Decimals(5)
     const token1Amount = expandTo18Decimals(10)
     await this.addLiquidity(token0Amount, token1Amount)
