@@ -56,6 +56,5 @@ describe('DinoTreasury', () => {
     expect(await this.dino.balanceOf(this.recipient2.address)).to.equal(expandTo18Decimals(20))
     await this.treasury.connect(this.recipient).claim()
     expect(await this.dino.balanceOf(this.recipient.address)).to.equal(expandTo18Decimals(164))
-    
   })
 })

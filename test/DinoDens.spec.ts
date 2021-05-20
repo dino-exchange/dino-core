@@ -27,7 +27,7 @@ describe('DinoDens', function () {
   })
 
   it('should set correct state variables', async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 1)
+    this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 1)
     await this.dens.deployed()
     await this.treasury.add('100', this.dens.address)
 
@@ -38,7 +38,7 @@ describe('DinoDens', function () {
   })
 
   it('should allow dev and only dev to update dev', async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 1)
+    this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 1)
     await this.dens.deployed()
 
     expect(await this.dens.devaddr()).to.equal(this.dev.address)
@@ -67,8 +67,8 @@ describe('DinoDens', function () {
     })
 
     it('should allow emergency withdraw', async function () {
-      this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 1)
-    await this.dens.deployed()
+      this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 1)
+      await this.dens.deployed()
       await this.dens.add('100', this.lp.address, true)
 
       await this.lp.connect(this.bob).approve(this.dens.address, '1000')
@@ -80,9 +80,9 @@ describe('DinoDens', function () {
     })
 
     it('should give out DINOs only after farming time', async function () {
-      this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 100)
-    await this.dens.deployed()
-    await this.treasury.add('100', this.dens.address)
+      this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 100)
+      await this.dens.deployed()
+      await this.treasury.add('100', this.dens.address)
       await this.dens.add('100', this.lp.address, true)
 
       await this.lp.connect(this.bob).approve(this.dens.address, '1000')
