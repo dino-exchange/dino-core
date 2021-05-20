@@ -80,35 +80,36 @@ describe('DinoDens', function () {
     })
 
     it('should give out DINOs only after farming time', async function () {
-      this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 100)
+      const firstBlock = await ethers.provider.getBlockNumber();
+      this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, firstBlock + 100)
       await this.dens.deployed()
       await this.treasury.add('100', this.dens.address)
-      await this.dens.add('100', this.lp.address, true)
+      await this.dens.add('99', this.lp.address, true)
 
       await this.lp.connect(this.bob).approve(this.dens.address, '1000')
       await this.dens.connect(this.bob).deposit(1, '100')
-      await advanceBlockTo(89)
+      await advanceBlockTo(firstBlock + 89)
 
       await this.dens.connect(this.bob).deposit(1, '0') // block 90
       expect(await this.dino.balanceOf(this.bob.address)).to.equal('0')
-      await advanceBlockTo(94)
+      await advanceBlockTo(firstBlock + 94)
 
       await this.dens.connect(this.bob).deposit(1, '0') // block 95
       expect(await this.dino.balanceOf(this.bob.address)).to.equal('0')
-      await advanceBlockTo(99)
+      await advanceBlockTo(firstBlock + 99)
 
       await this.dens.connect(this.bob).deposit(1, '0') // block 100
       expect(await this.dino.balanceOf(this.bob.address)).to.equal('0')
-      await advanceBlockTo(100)
+      await advanceBlockTo(firstBlock + 100)
 
       await this.dens.connect(this.bob).deposit(1, '0') // block 101
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal('4511278195488721804')
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(6).mul(99).div(132))
 
-      await advanceBlockTo(104)
+      await advanceBlockTo(firstBlock + 104)
       await this.dens.connect(this.bob).deposit(1, '0') // block 105
 
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal('22556390977443609022')
-      expect(await this.dino.balanceOf(this.dev.address)).to.equal('2255639097744360901')
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(30).mul(99).div(132))
+      expect(await this.dino.balanceOf(this.dev.address)).to.equal(expandTo18Decimals(3).mul(99).div(132))
     })
 
     // it("should not distribute SUSHIs if no one deposit", async function () {

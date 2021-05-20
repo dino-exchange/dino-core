@@ -32,26 +32,27 @@ describe('DinoTreasury', () => {
   })
 
   it('should add new fund', async function () {
-    await advanceBlockTo(9)
+    const firstBlock = await ethers.provider.getBlockNumber();
+    await advanceBlockTo(firstBlock + 9)
     await this.treasury.add(100, this.recipient.address)
     expect(await this.treasury.recipientToPid(this.recipient.address)).to.equal(1)
     expect((await this.treasury.fundInfo(1)).recipient).to.equal(this.recipient.address)
-    expect((await this.treasury.fundInfo(1)).lastRewardBlock).to.equal(10)
+    expect((await this.treasury.fundInfo(1)).lastRewardBlock).to.equal(firstBlock + 10)
     expect((await this.treasury.fundInfo(1)).allocPoint).to.equal(100)
     expect(await this.treasury.totalAllocPoint()).to.equal(100)
 
-    await advanceBlockTo(19)
+    await advanceBlockTo(firstBlock + 19)
     await this.treasury.connect(this.recipient).claim()
     expect(await this.dino.balanceOf(this.recipient.address)).to.equal(expandTo18Decimals(60))
     await this.treasury.connect(this.recipient).claim()
     expect(await this.dino.balanceOf(this.recipient.address)).to.equal(expandTo18Decimals(66))
     expect(await this.dino.balanceOf(this.treasury.address)).to.equal(expandTo18Decimals(15000 - 66))
 
-    await advanceBlockTo(29)
+    await advanceBlockTo(firstBlock + 29)
     await this.treasury.add(50, this.recipient2.address)
     expect(await this.treasury.totalAllocPoint()).to.equal(150)
 
-    await advanceBlockTo(39)
+    await advanceBlockTo(firstBlock + 39)
     await this.treasury.connect(this.recipient2).claim()
     expect(await this.dino.balanceOf(this.recipient2.address)).to.equal(expandTo18Decimals(20))
     await this.treasury.connect(this.recipient).claim()
