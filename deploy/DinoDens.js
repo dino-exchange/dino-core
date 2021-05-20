@@ -18,13 +18,15 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         throw Error("No DinoToken!")
     }
 
+    const treasuryAddress = (await deployments.get("DinoTreasury")).address
+
     await deploy("DinoDens", {
         from: deployer,
-        args: [dinoTokenAddress, dev, 6, 1],
+        args: [dinoTokenAddress, treasuryAddress, dev, 1],
         log: true,
         deterministicDeployment: false
     })
 }
 
 module.exports.tags = ["DinoDens"]
-module.exports.dependencies = ["Mocks"]
+module.exports.dependencies = ["Mocks", "DinoTreasury"]

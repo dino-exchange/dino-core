@@ -12,6 +12,10 @@ interface IMigratorDens {
     function migrate(IBEP20 token) external returns (IBEP20);
 }
 
+interface IDinoTreasury {
+    function claim() external returns (uint256);
+}
+
 // Note that it's ownable and the owner wields tremendous power. The ownership
 // will be transferred to a governance smart contract once DINO is sufficiently
 // distributed and the community can show to govern itself.
@@ -48,12 +52,14 @@ contract DinoDens is Ownable {
 
     // The DINO TOKEN!
     IBEP20 public dino;
+    // The treasury contract
+    IDinoTreasury public treasury;
     // Dev address.
     address public devaddr;
     // DINO tokens created per block.
     uint256 public dinoPerBlock;
-    // Bonus muliplier for early dino makers.
-    uint256 public BONUS_MULTIPLIER = 1;
+    // Last block number that dens claims DINO tokens.
+    uint256 public lastClaimDinoBlock;
     // The migrator contract. It has a lot of power. Can only be set through governance (owner).
     IMigratorDens public migrator;
 
@@ -72,23 +78,20 @@ contract DinoDens is Ownable {
 
     constructor(
         IBEP20 _dino,
+        IDinoTreasury _treasury,
         address _devaddr,
-        uint256 _dinoPerBlock,
         uint256 _startBlock
     ) public {
         dino = _dino;
+        treasury = _treasury;
         devaddr = _devaddr;
-        dinoPerBlock = _dinoPerBlock;
         startBlock = _startBlock;
 
         // staking pool
         poolInfo.push(PoolInfo({lpToken: _dino, allocPoint: 1000, lastRewardBlock: startBlock, accDinoPerShare: 0}));
-
+        dinoPerBlock = treasury.claim();
+        lastClaimDinoBlock = block.number;
         totalAllocPoint = 1000;
-    }
-
-    function updateMultiplier(uint256 multiplierNumber) public onlyOwner {
-        BONUS_MULTIPLIER = multiplierNumber;
     }
 
     function poolLength() external view returns (uint256) {
@@ -161,8 +164,8 @@ contract DinoDens is Ownable {
     }
 
     // Return reward multiplier over the given _from to _to block.
-    function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {
-        return _to.sub(_from).mul(BONUS_MULTIPLIER);
+    function getMultiplier(uint256 _from, uint256 _to) public pure returns (uint256) {
+        return _to.sub(_from);
     }
 
     // View function to see pending DINOs on frontend.
@@ -189,6 +192,11 @@ contract DinoDens is Ownable {
 
     // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 _pid) public {
+        if (lastClaimDinoBlock < block.number) {
+            dinoPerBlock = treasury.claim().div(block.number.sub(lastClaimDinoBlock));
+            lastClaimDinoBlock = block.number;
+        }
+
         PoolInfo storage pool = poolInfo[_pid];
         if (block.number <= pool.lastRewardBlock) {
             return;

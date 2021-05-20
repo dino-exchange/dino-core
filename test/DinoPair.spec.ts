@@ -1,18 +1,11 @@
 import { ethers, waffle } from 'hardhat'
 import { expect } from 'chai'
-import { BigNumber, Contract, utils } from 'ethers'
+import { BigNumber } from 'ethers'
+import { expandTo18Decimals, advanceBlock } from './shared/utilities'
 
 const DECIMALS = '000000000000000000'
 const TOTAL_SUPPLY = BigNumber.from('10000' + DECIMALS)
 const MINIMUM_LIQUIDITY = BigNumber.from(1000)
-
-function expandTo18Decimals(n: number): BigNumber {
-  return BigNumber.from(n).mul(BigNumber.from(10).pow(18))
-}
-
-async function advanceBlock() {
-  return ethers.provider.send('evm_mine', [])
-}
 
 describe('DinoPair', () => {
   before(async function () {

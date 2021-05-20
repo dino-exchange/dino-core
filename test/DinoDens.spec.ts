@@ -1,15 +1,6 @@
 import { ethers } from 'hardhat'
 import { expect } from 'chai'
-
-async function advanceBlock() {
-  return ethers.provider.send('evm_mine', [])
-}
-
-async function advanceBlockTo(blockNumber: number) {
-  for (let i = await ethers.provider.getBlockNumber(); i < blockNumber; i++) {
-    await advanceBlock()
-  }
-}
+import { expandTo18Decimals, advanceBlockTo } from './shared/utilities'
 
 describe('DinoDens', function () {
   before(async function () {
@@ -23,27 +14,32 @@ describe('DinoDens', function () {
     this.DinoDens = await ethers.getContractFactory('DinoDens')
     this.MockBEP20 = await ethers.getContractFactory('MockBEP20', this.minter)
     this.DinoToken = await ethers.getContractFactory('DinoToken', this.minter)
+    this.DinoTreasury = await ethers.getContractFactory('DinoTreasury', this.minter)
   })
 
   beforeEach(async function () {
     this.dino = await this.DinoToken.deploy()
     await this.dino.deployed()
+
+    this.treasury = await this.DinoTreasury.deploy(this.dino.address, 0)
+    await this.treasury.deployed()
+    await this.dino.transfer(this.treasury.address, expandTo18Decimals(15000))
   })
 
   it('should set correct state variables', async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, 6, 0)
+    this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 1)
     await this.dens.deployed()
-    await this.dino.transfer(this.dens.address, '10000000000')
+    await this.treasury.add('100', this.dens.address)
 
     expect(await this.dens.dino()).to.equal(this.dino.address)
+    expect(await this.dens.treasury()).to.equal(this.treasury.address)
     expect(await this.dens.devaddr()).to.equal(this.dev.address)
-    expect(await this.dino.balanceOf(this.dens.address)).to.equal('10000000000')
+    expect(await this.dino.balanceOf(this.dens.address)).to.equal('0')
   })
 
   it('should allow dev and only dev to update dev', async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, 6, 0)
+    this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 1)
     await this.dens.deployed()
-    await this.dino.transfer(this.dens.address, '10000000000')
 
     expect(await this.dens.devaddr()).to.equal(this.dev.address)
     await expect(this.dens.connect(this.bob).dev(this.bob.address, { from: this.bob.address })).to.be.revertedWith(
@@ -71,8 +67,8 @@ describe('DinoDens', function () {
     })
 
     it('should allow emergency withdraw', async function () {
-      this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, '100', '100')
-      await this.dens.deployed()
+      this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 1)
+    await this.dens.deployed()
       await this.dens.add('100', this.lp.address, true)
 
       await this.lp.connect(this.bob).approve(this.dens.address, '1000')
@@ -84,9 +80,9 @@ describe('DinoDens', function () {
     })
 
     it('should give out DINOs only after farming time', async function () {
-      this.dens = await this.DinoDens.deploy(this.dino.address, this.dev.address, '100', '100')
-      await this.dens.deployed()
-      await this.dino.transfer(this.dens.address, '10000000000')
+      this.dens = await this.DinoDens.deploy(this.dino.address,this.treasury.address, this.dev.address, 100)
+    await this.dens.deployed()
+    await this.treasury.add('100', this.dens.address)
       await this.dens.add('100', this.lp.address, true)
 
       await this.lp.connect(this.bob).approve(this.dens.address, '1000')
@@ -106,13 +102,13 @@ describe('DinoDens', function () {
       await advanceBlockTo(100)
 
       await this.dens.connect(this.bob).deposit(1, '0') // block 101
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal('75')
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal('4511278195488721804')
 
       await advanceBlockTo(104)
       await this.dens.connect(this.bob).deposit(1, '0') // block 105
 
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal('375')
-      expect(await this.dino.balanceOf(this.dev.address)).to.equal('37')
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal('22556390977443609022')
+      expect(await this.dino.balanceOf(this.dev.address)).to.equal('2255639097744360901')
     })
 
     // it("should not distribute SUSHIs if no one deposit", async function () {
