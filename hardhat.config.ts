@@ -26,6 +26,13 @@ const config: HardhatUserConfig = {
       live: false,
       saveDeployments: true,
     },
+    ganache: {
+      chainId: 1337,
+      url: 'http://127.0.0.1:7545',
+      accounts,
+      live: false,
+      saveDeployments: false,
+    },
     bsc: {
       chainId: 56,
       gasPrice: 7000000000,

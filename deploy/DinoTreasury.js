@@ -2,7 +2,7 @@ const DinoToken = {
   "56": "0xf317932ee2C30fa5d0E14416775977801734812D",
 };
 
-module.exports = async function ({ getNamedAccounts, deployments }) {
+module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
   const { deploy } = deployments
 
   const { deployer } = await getNamedAccounts()
@@ -18,9 +18,11 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         throw Error("No DinoToken!")
     }
 
+  const startBlock = await ethers.provider.getBlockNumber();
+
   await deploy('DinoTreasury', {
     from: deployer,
-    args: [dinoTokenAddress, 0],
+    args: [dinoTokenAddress, startBlock],
     log: true,
     deterministicDeployment: false,
   })

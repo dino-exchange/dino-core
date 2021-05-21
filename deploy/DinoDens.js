@@ -2,7 +2,7 @@ const DinoToken = {
     "56": "0xf317932ee2C30fa5d0E14416775977801734812D",
 };
 
-module.exports = async function ({ getNamedAccounts, deployments }) {
+module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
     const { deploy } = deployments
 
     const { deployer, dev } = await getNamedAccounts()
@@ -19,13 +19,17 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     }
 
     const treasuryAddress = (await deployments.get("DinoTreasury")).address
-
-    await deploy("DinoDens", {
+    const startBlock = await ethers.provider.getBlockNumber();
+    
+    const dens = await deploy("DinoDens", {
         from: deployer,
-        args: [dinoTokenAddress, treasuryAddress, dev, 1],
+        args: [dinoTokenAddress, treasuryAddress, dev, startBlock],
         log: true,
         deterministicDeployment: false
     })
+
+    const treasury = await ethers.getContractAt('DinoTreasury', treasuryAddress)
+    await treasury.add(100, dens.address)
 }
 
 module.exports.tags = ["DinoDens"]
