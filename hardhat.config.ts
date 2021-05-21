@@ -1,19 +1,12 @@
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-deploy';
+import "./tasks"
 
 import { HardhatUserConfig, task } from 'hardhat/config';
 
 const accounts = {
   mnemonic: process.env.MNEMONIC || 'glimpse half enlist grant search million apart ocean script amazing bachelor winner',
 };
-
-task('accounts', 'Prints the list of accounts', async (_args, hre) => {
-  const accounts = await hre.ethers.getSigners();
-
-  for (const account of accounts) {
-    console.log(account.address);
-  }
-});
 
 const config: HardhatUserConfig = {
   namedAccounts: {
