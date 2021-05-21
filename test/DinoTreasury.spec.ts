@@ -32,7 +32,7 @@ describe('DinoTreasury', () => {
   })
 
   it('should add new fund', async function () {
-    const firstBlock = await ethers.provider.getBlockNumber();
+    const firstBlock = await ethers.provider.getBlockNumber()
     await advanceBlockTo(firstBlock + 9)
     await this.treasury.add(100, this.recipient.address)
     expect(await this.treasury.recipientToPid(this.recipient.address)).to.equal(1)

@@ -9,16 +9,18 @@ module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
 
   const chainId = await getChainId()
 
-    let dinoTokenAddress;
-    if (chainId === "1337") {
-        dinoTokenAddress = (await deployments.get("DinoToken")).address
-    } else if (chainId in DinoToken) {
-        dinoTokenAddress = DinoToken[chainId].address
-    } else {
-        throw Error("No DinoToken!")
-    }
+  let dinoTokenAddress;
+  if (chainId === "1337") {
+    dinoTokenAddress = (await deployments.get("DinoToken")).address
+  } else if (chainId === "97") {
+    dinoTokenAddress = (await deployments.get("DinoToken")).address
+  } else if (chainId in DinoToken) {
+    dinoTokenAddress = DinoToken[chainId]
+  } else {
+    throw Error("No DinoToken!")
+  }
 
-  const startBlock = await ethers.provider.getBlockNumber();
+  const startBlock = 9025730;
 
   await deploy('DinoTreasury', {
     from: deployer,
@@ -29,4 +31,4 @@ module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
 }
 
 module.exports.tags = ["DinoTreasury"]
-module.exports.dependencies = ["Mocks"]
+module.exports.dependencies = ["Mocks", "DinoToken"]

@@ -80,8 +80,13 @@ describe('DinoDens', function () {
     })
 
     it('should give out DINOs only after farming time', async function () {
-      const firstBlock = await ethers.provider.getBlockNumber();
-      this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, firstBlock + 100)
+      const firstBlock = await ethers.provider.getBlockNumber()
+      this.dens = await this.DinoDens.deploy(
+        this.dino.address,
+        this.treasury.address,
+        this.dev.address,
+        firstBlock + 100
+      )
       await this.dens.deployed()
       await this.treasury.add('100', this.dens.address)
       await this.dens.add('99', this.lp.address, true)
