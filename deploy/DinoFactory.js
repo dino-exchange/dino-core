@@ -1,11 +1,11 @@
 module.exports = async function ({ getNamedAccounts, deployments }) {
   const { deploy } = deployments
 
-  const { deployer, dev } = await getNamedAccounts()
+  const { deployer } = await getNamedAccounts()
 
   await deploy('DinoFactory', {
     from: deployer,
-    args: [dev],
+    args: [deployer],
     log: true,
     deterministicDeployment: false,
   })

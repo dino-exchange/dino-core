@@ -23,15 +23,12 @@ module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
   const treasuryAddress = (await deployments.get("DinoTreasury")).address
   const startBlock = 9025730;
 
-  const dens = await deploy("DinoDens", {
+  await deploy("DinoDens", {
     from: deployer,
     args: [dinoTokenAddress, treasuryAddress, dev, startBlock],
     log: true,
     deterministicDeployment: false
   })
-
-  const treasury = await ethers.getContractAt('DinoTreasury', treasuryAddress)
-  await treasury.add(100, dens.address)
 }
 
 module.exports.tags = ["DinoDens"]
