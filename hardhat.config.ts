@@ -1,3 +1,4 @@
+import "@nomiclabs/hardhat-etherscan";
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-deploy';
 import "./tasks"
@@ -12,6 +13,9 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: { default: 0 },
     dev: { default: 1 },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
   networks: {
     localhost: {

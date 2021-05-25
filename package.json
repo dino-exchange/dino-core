@@ -7,14 +7,17 @@
     "lint:fix": "prettier  --write ./test/{**/*,*}.ts ./contracts/{**/*,**/**/*}.sol",
     "mainnet:deploy": "hardhat --network bsc deploy",
     "mainnet:export": "hardhat --network bsc export --export exports/bsc.json",
+    "mainnet:verify": "hardhat --network bsc etherscan-verify --solc-input",
     "testnet:deploy": "hardhat --network bscTestnet deploy",
     "testnet:export": "hardhat --network bscTestnet export --export exports/bscTestnet.json",
+    "testnet:verify": "hardhat --network bscTestnet etherscan-verify --solc-input",
     "compile": "hardhat compile",
     "test": "hardhat test"
   },
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.0",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@types/chai": "^4.2.6",
     "@types/mocha": "^8.2.2",
