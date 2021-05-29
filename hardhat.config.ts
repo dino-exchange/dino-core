@@ -3,7 +3,7 @@ import '@nomiclabs/hardhat-waffle';
 import 'hardhat-deploy';
 import "./tasks"
 
-import { HardhatUserConfig, task } from 'hardhat/config';
+import { HardhatUserConfig } from 'hardhat/config';
 
 const accounts = {
   mnemonic: process.env.MNEMONIC || 'glimpse half enlist grant search million apart ocean script amazing bachelor winner',

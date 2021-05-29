@@ -72,9 +72,21 @@ contract DinoDens is Ownable {
     // The block number when DINO mining starts.
     uint256 public startBlock;
 
+    // Max referral commission rate: 20%.
+    uint16 public constant MAXIMUM_REFERRAL_BP = 2000;
+    // Referral Bonus in basis points. Initially set to 2%
+    uint256 public refBonusBP = 200;
+    uint256 public accBP = 9800; 
+    // Referral Mapping
+    mapping(address => address) public referrers; // account_address -> referrer_address
+    mapping(address => uint256) public referredCount; // referrer_address -> num_of_referred
+
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
+    event Referral(address indexed _referrer, address indexed _user);
+    event ReferralPaid(address indexed _user, address indexed _userTo, uint256 _reward);
+    event ReferralBonusBpChanged(uint256 _oldBp, uint256 _newBp);
 
     constructor(
         IBEP20 _dino,
@@ -179,7 +191,7 @@ contract DinoDens is Ownable {
             uint256 dinoReward = multiplier.mul(dinoPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
             accDinoPerShare = accDinoPerShare.add(dinoReward.mul(1e12).div(lpSupply));
         }
-        return user.amount.mul(accDinoPerShare).div(1e12).sub(user.rewardDebt);
+        return user.amount.mul(accDinoPerShare).div(1e12).sub(user.rewardDebt).mul(accBP).div(10000);
     }
 
     // Update reward variables for all pools. Be careful of gas spending!
@@ -208,7 +220,8 @@ contract DinoDens is Ownable {
         }
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
         uint256 dinoReward = multiplier.mul(dinoPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-        dino.transfer(devaddr, dinoReward.div(10));
+        safeDinoTransfer(devaddr, dinoReward.div(10));
+        dinoReward = dinoReward.sub(dinoReward.div(10));
         pool.accDinoPerShare = pool.accDinoPerShare.add(dinoReward.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
     }
@@ -223,10 +236,33 @@ contract DinoDens is Ownable {
         if (user.amount > 0) {
             uint256 pending = user.amount.mul(pool.accDinoPerShare).div(1e12).sub(user.rewardDebt);
             if (pending > 0) {
-                safeDinoTransfer(msg.sender, pending);
+                sendReward(msg.sender, pending);
             }
         }
         if (_amount > 0) {
+            pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+            user.amount = user.amount.add(_amount);
+        }
+        user.rewardDebt = user.amount.mul(pool.accDinoPerShare).div(1e12);
+        emit Deposit(msg.sender, _pid, _amount);
+    }
+
+    // Deposit LP tokens to DinoDens for DINO allocation with referral.
+    function depositWithReferrer(uint256 _pid, uint256 _amount, address _referrer) public {
+        require(_pid != 0, 'deposit DINO by staking');
+        require(_referrer == address(_referrer),"deposit: Invalid referrer address");
+
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][msg.sender];
+        updatePool(_pid);
+        if (user.amount > 0) {
+            uint256 pending = user.amount.mul(pool.accDinoPerShare).div(1e12).sub(user.rewardDebt);
+            if (pending > 0) {
+                sendReward(msg.sender, pending);
+            }
+        }
+        if (_amount > 0) {
+            setReferral(msg.sender, _referrer);
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
             user.amount = user.amount.add(_amount);
         }
@@ -244,7 +280,7 @@ contract DinoDens is Ownable {
         updatePool(_pid);
         uint256 pending = user.amount.mul(pool.accDinoPerShare).div(1e12).sub(user.rewardDebt);
         if (pending > 0) {
-            safeDinoTransfer(msg.sender, pending);
+            sendReward(msg.sender, pending);
         }
         if (_amount > 0) {
             user.amount = user.amount.sub(_amount);
@@ -262,7 +298,7 @@ contract DinoDens is Ownable {
         if (user.amount > 0) {
             uint256 pending = user.amount.mul(pool.accDinoPerShare).div(1e12).sub(user.rewardDebt);
             if (pending > 0) {
-                safeDinoTransfer(msg.sender, pending);
+                sendReward(msg.sender, pending);
             }
         }
         if (_amount > 0) {
@@ -282,7 +318,7 @@ contract DinoDens is Ownable {
         updatePool(0);
         uint256 pending = user.amount.mul(pool.accDinoPerShare).div(1e12).sub(user.rewardDebt);
         if (pending > 0) {
-            safeDinoTransfer(msg.sender, pending);
+            sendReward(msg.sender, pending);
         }
         if (_amount > 0) {
             user.amount = user.amount.sub(_amount);
@@ -317,5 +353,48 @@ contract DinoDens is Ownable {
     function dev(address _devaddr) public {
         require(msg.sender == devaddr, 'dev: wut?');
         devaddr = _devaddr;
+    }
+
+    // Set Referral Address for a user
+    function setReferral(address _user, address _referrer) internal {
+        if (_referrer == address(_referrer) && referrers[_user] == address(0) && _referrer != address(0) && _referrer != _user) {
+            referrers[_user] = _referrer;
+            referredCount[_referrer] += 1;
+            emit Referral(_user, _referrer);
+        }
+    }
+
+    // Get Referral Address for a Account
+    function getReferral(address _user) public view returns (address) {
+        return referrers[_user];
+    }
+
+    // Send reward to Account and the referrer if needed
+    function sendReward(address _user, uint256 _pending) internal {
+        uint256 accEarned = _pending.mul(accBP).div(10000);
+        safeDinoTransfer(_user, accEarned);
+        payReferralCommission(_user, _pending);
+    }
+
+    // Pay referral commission to the referrer who referred this user.
+    function payReferralCommission(address _user, uint256 _pending) internal {
+        address referrer = getReferral(_user);
+        if (referrer != address(0) && referrer != _user && refBonusBP > 0) {
+            uint256 refBonusEarned = _pending.mul(refBonusBP).div(10000);
+            safeDinoTransfer(referrer, refBonusEarned);
+            emit ReferralPaid(_user, referrer, refBonusEarned);
+        }
+    }
+
+    // Referral Bonus in basis points.
+    // Initially set to 2%, this this the ability to increase or decrease the Bonus percentage based on
+    // community voting and feedback.
+    function updateReferralBonusBp(uint256 _newRefBonusBp) public onlyOwner {
+        require(_newRefBonusBp <= MAXIMUM_REFERRAL_BP, "updateReferralBonusBp: invalid referral bonus basis points");
+        require(_newRefBonusBp != refBonusBP, "updateReferralBonusBp: same bonus bp set");
+        uint256 previousRefBonusBP = refBonusBP;
+        refBonusBP = _newRefBonusBp;
+        accBP = 10000 - refBonusBP;
+        emit ReferralBonusBpChanged(previousRefBonusBP, _newRefBonusBp);
     }
 }
