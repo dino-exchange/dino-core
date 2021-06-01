@@ -27,30 +27,13 @@ describe('DinoDens', function () {
   })
 
   it('should set correct state variables', async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 1)
+    this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, 1)
     await this.dens.deployed()
     await this.treasury.add('100', this.dens.address)
 
     expect(await this.dens.dino()).to.equal(this.dino.address)
     expect(await this.dens.treasury()).to.equal(this.treasury.address)
-    expect(await this.dens.devaddr()).to.equal(this.dev.address)
     expect(await this.dino.balanceOf(this.dens.address)).to.equal('0')
-  })
-
-  it('should allow dev and only dev to update dev', async function () {
-    this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 1)
-    await this.dens.deployed()
-
-    expect(await this.dens.devaddr()).to.equal(this.dev.address)
-    await expect(this.dens.connect(this.bob).dev(this.bob.address, { from: this.bob.address })).to.be.revertedWith(
-      'dev: wut?'
-    )
-
-    await this.dens.connect(this.dev).dev(this.bob.address, { from: this.dev.address })
-    expect(await this.dens.devaddr()).to.equal(this.bob.address)
-
-    await this.dens.connect(this.bob).dev(this.alice.address, { from: this.bob.address })
-    expect(await this.dens.devaddr()).to.equal(this.alice.address)
   })
 
   context('With BEP/LP token added to the field', function () {
@@ -67,7 +50,7 @@ describe('DinoDens', function () {
     })
 
     it('should allow emergency withdraw', async function () {
-      this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, this.dev.address, 1)
+      this.dens = await this.DinoDens.deploy(this.dino.address, this.treasury.address, 1)
       await this.dens.deployed()
       await this.dens.add('100', this.lp.address, true)
 
@@ -84,7 +67,6 @@ describe('DinoDens', function () {
       this.dens = await this.DinoDens.deploy(
         this.dino.address,
         this.treasury.address,
-        this.dev.address,
         firstBlock + 100
       )
       await this.dens.deployed()
@@ -108,13 +90,12 @@ describe('DinoDens', function () {
       await advanceBlockTo(firstBlock + 100)
 
       await this.dens.connect(this.bob).deposit(1, '0') // block 101
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(6).mul(99).div(132).mul(9).div(10).mul(9800).div(10000))
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(6).mul(9800).div(10000))
 
       await advanceBlockTo(firstBlock + 104)
       await this.dens.connect(this.bob).deposit(1, '0') // block 105
 
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(30).mul(99).div(132).mul(9).div(10).mul(9800).div(10000))
-      expect(await this.dino.balanceOf(this.dev.address)).to.equal(expandTo18Decimals(3).mul(99).div(132))
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(30).mul(9800).div(10000))
     })
 
     it('should give out DINOs to the referrer', async function () {
@@ -122,7 +103,6 @@ describe('DinoDens', function () {
       this.dens = await this.DinoDens.deploy(
         this.dino.address,
         this.treasury.address,
-        this.dev.address,
         firstBlock + 100
       )
       await this.dens.deployed()
@@ -134,15 +114,14 @@ describe('DinoDens', function () {
       await advanceBlockTo(firstBlock + 100)
 
       await this.dens.connect(this.bob).deposit(1, '0') // block 101
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(6).mul(99).div(132).mul(9).div(10).mul(9800).div(10000))
-      expect(await this.dino.balanceOf(this.carol.address)).to.equal(expandTo18Decimals(6).mul(99).div(132).mul(9).div(10).mul(200).div(10000))
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(6).mul(9800).div(10000))
+      expect(await this.dino.balanceOf(this.carol.address)).to.equal(expandTo18Decimals(6).mul(200).div(10000))
 
       await advanceBlockTo(firstBlock + 104)
       await this.dens.connect(this.bob).deposit(1, '0') // block 105
 
-      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(30).mul(99).div(132).mul(9).div(10).mul(9800).div(10000))
-      expect(await this.dino.balanceOf(this.carol.address)).to.equal(expandTo18Decimals(30).mul(99).div(132).mul(9).div(10).mul(200).div(10000))
-      expect(await this.dino.balanceOf(this.dev.address)).to.equal(expandTo18Decimals(3).mul(99).div(132))
+      expect(await this.dino.balanceOf(this.bob.address)).to.equal(expandTo18Decimals(30).mul(9800).div(10000))
+      expect(await this.dino.balanceOf(this.carol.address)).to.equal(expandTo18Decimals(30).mul(200).div(10000))
     })
   })
 })

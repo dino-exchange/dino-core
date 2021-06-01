@@ -5,7 +5,7 @@ const DinoToken = {
 module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
   const { deploy } = deployments
 
-  const { deployer, dev } = await getNamedAccounts()
+  const { deployer } = await getNamedAccounts()
 
   const chainId = await getChainId()
 
@@ -25,7 +25,7 @@ module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
 
   await deploy("DinoDens", {
     from: deployer,
-    args: [dinoTokenAddress, treasuryAddress, dev, startBlock],
+    args: [dinoTokenAddress, treasuryAddress, startBlock],
     log: true,
     deterministicDeployment: false
   })

@@ -54,8 +54,6 @@ contract DinoDens is Ownable {
     IBEP20 public dino;
     // The treasury contract
     IDinoTreasury public treasury;
-    // Dev address.
-    address public devaddr;
     // DINO tokens created per block.
     uint256 public dinoPerBlock;
     // Last block number that dens claims DINO tokens.
@@ -91,19 +89,17 @@ contract DinoDens is Ownable {
     constructor(
         IBEP20 _dino,
         IDinoTreasury _treasury,
-        address _devaddr,
         uint256 _startBlock
     ) public {
         dino = _dino;
         treasury = _treasury;
-        devaddr = _devaddr;
         startBlock = _startBlock;
 
         // staking pool
-        poolInfo.push(PoolInfo({lpToken: _dino, allocPoint: 1000, lastRewardBlock: startBlock, accDinoPerShare: 0}));
+        poolInfo.push(PoolInfo({lpToken: _dino, allocPoint: 0, lastRewardBlock: startBlock, accDinoPerShare: 0}));
         dinoPerBlock = treasury.claim();
         lastClaimDinoBlock = block.number;
-        totalAllocPoint = 1000;
+        totalAllocPoint = 0;
     }
 
     function poolLength() external view returns (uint256) {
@@ -125,7 +121,6 @@ contract DinoDens is Ownable {
         poolInfo.push(
             PoolInfo({lpToken: _lpToken, allocPoint: _allocPoint, lastRewardBlock: lastRewardBlock, accDinoPerShare: 0})
         );
-        updateStakingPool();
     }
 
     // Update the given pool's DINO allocation point. Can only be called by the owner.
@@ -141,20 +136,6 @@ contract DinoDens is Ownable {
         poolInfo[_pid].allocPoint = _allocPoint;
         if (prevAllocPoint != _allocPoint) {
             totalAllocPoint = totalAllocPoint.sub(prevAllocPoint).add(_allocPoint);
-            updateStakingPool();
-        }
-    }
-
-    function updateStakingPool() internal {
-        uint256 length = poolInfo.length;
-        uint256 points = 0;
-        for (uint256 pid = 1; pid < length; ++pid) {
-            points = points.add(poolInfo[pid].allocPoint);
-        }
-        if (points != 0) {
-            points = points.div(3);
-            totalAllocPoint = totalAllocPoint.sub(poolInfo[0].allocPoint).add(points);
-            poolInfo[0].allocPoint = points;
         }
     }
 
@@ -220,8 +201,6 @@ contract DinoDens is Ownable {
         }
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
         uint256 dinoReward = multiplier.mul(dinoPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-        safeDinoTransfer(devaddr, dinoReward.div(10));
-        dinoReward = dinoReward.sub(dinoReward.div(10));
         pool.accDinoPerShare = pool.accDinoPerShare.add(dinoReward.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
     }
@@ -347,12 +326,6 @@ contract DinoDens is Ownable {
         } else {
             dino.transfer(_to, _amount);
         }
-    }
-
-    // Update dev address by the previous dev.
-    function dev(address _devaddr) public {
-        require(msg.sender == devaddr, 'dev: wut?');
-        devaddr = _devaddr;
     }
 
     // Set Referral Address for a user
