@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.6.12;
+pragma experimental ABIEncoderV2;
 
 import './libraries/SafeMath.sol';
 import './libraries/UQ112x112.sol';
@@ -14,6 +15,7 @@ contract DinoPair is DinoBEP20 {
     using UQ112x112 for uint224;
 
     uint256 public constant MINIMUM_LIQUIDITY = 10**3;
+    uint256 public constant MAX_PRICE_HISTORY = 10000;
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
 
     address public factory;
@@ -27,6 +29,15 @@ contract DinoPair is DinoBEP20 {
     uint256 public price0CumulativeLast;
     uint256 public price1CumulativeLast;
     uint256 public kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
+
+    struct PriceLog {
+        uint256 price0Cumulative;
+        uint256 price1Cumulative;
+        uint32 timestamp;
+    }
+
+    PriceLog[] public priceLog;
+    uint256 public priceLogNextIndex;
 
     uint256 private unlocked = 1;
     modifier lock() {
@@ -96,6 +107,7 @@ contract DinoPair is DinoBEP20 {
             // * never overflows, and + overflow is desired
             price0CumulativeLast += uint256(UQ112x112.encode(_reserve1).uqdiv(_reserve0)) * timeElapsed;
             price1CumulativeLast += uint256(UQ112x112.encode(_reserve0).uqdiv(_reserve1)) * timeElapsed;
+            _appendPriceLog(price0CumulativeLast, price1CumulativeLast, blockTimestamp);
         }
         reserve0 = uint112(balance0);
         reserve1 = uint112(balance1);
@@ -225,5 +237,21 @@ contract DinoPair is DinoBEP20 {
     // force reserves to match balances
     function sync() external lock {
         _update(IBEP20(token0).balanceOf(address(this)), IBEP20(token1).balanceOf(address(this)), reserve0, reserve1);
+    }
+
+    function _appendPriceLog(uint256 price0Cumulative, uint256 price1Cumulative, uint32 blockTimestamp) private {
+        if (priceLog.length < MAX_PRICE_HISTORY) {
+            priceLog.push(PriceLog(price0Cumulative, price1Cumulative, blockTimestamp));
+        } else {
+            priceLog[priceLogNextIndex] = PriceLog(price0Cumulative, price1Cumulative, blockTimestamp);
+        }
+
+        if (++priceLogNextIndex >= MAX_PRICE_HISTORY) {
+            priceLogNextIndex = 0;
+        }
+    }
+
+    function priceLogLength() external view returns (uint256 length) {
+        return priceLog.length;
     }
 }
