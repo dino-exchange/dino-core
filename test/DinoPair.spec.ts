@@ -100,9 +100,9 @@ describe('DinoPair', () => {
   })
 
   const optimisticTestCases: BigNumber[][] = [
-    ['998000000000000000', 5, 10, 1], // given amountIn, amountOut = floor(amountIn * .998)
-    ['998000000000000000', 10, 5, 1],
-    ['998000000000000000', 5, 5, 1],
+    ['997000000000000000', 5, 10, 1], // given amountIn, amountOut = floor(amountIn * .998)
+    ['997000000000000000', 10, 5, 1],
+    ['997000000000000000', 5, 5, 1],
     [1, 5, 5, '1002004008016032065'], // given amountOut, amountIn = ceiling(amountOut / .998)
   ].map((a) => a.map((n) => (typeof n === 'string' ? BigNumber.from(n) : BigNumber.from(n + DECIMALS))))
 
@@ -187,7 +187,7 @@ describe('DinoPair', () => {
     await advanceBlock()
     const tx = await this.pair.swap(expectedOutputAmount, 0, this.minter.address, '0x')
     const receipt = await tx.wait()
-    expect(receipt.gasUsed).to.eq(73807)
+    expect(receipt.gasUsed).to.eq(151415)
   })
 
   // it('burn', async () => {

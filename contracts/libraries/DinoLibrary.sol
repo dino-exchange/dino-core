@@ -28,7 +28,7 @@ library DinoLibrary {
                         hex'ff',
                         factory,
                         keccak256(abi.encodePacked(token0, token1)),
-                        hex'cb86b93bbd8445ae27fcc664c1656d14d299666282de3b57f9f591bba6ae1a76' // init code hash
+                        hex'd5030a2cb58a788a4f1a0a5394ae8b55a5b87cd7f5c265332a669ed501aec279' // init code hash
                     )
                 )
             )
@@ -66,7 +66,7 @@ library DinoLibrary {
     ) internal pure returns (uint256 amountOut) {
         require(amountIn > 0, 'DinoLibrary: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'DinoLibrary: INSUFFICIENT_LIQUIDITY');
-        uint256 amountInWithFee = amountIn.mul(998);
+        uint256 amountInWithFee = amountIn.mul(997);
         uint256 numerator = amountInWithFee.mul(reserveOut);
         uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
@@ -81,7 +81,7 @@ library DinoLibrary {
         require(amountOut > 0, 'DinoLibrary: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'DinoLibrary: INSUFFICIENT_LIQUIDITY');
         uint256 numerator = reserveIn.mul(amountOut).mul(1000);
-        uint256 denominator = reserveOut.sub(amountOut).mul(998);
+        uint256 denominator = reserveOut.sub(amountOut).mul(997);
         amountIn = (numerator / denominator).add(1);
     }
 

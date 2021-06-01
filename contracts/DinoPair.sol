@@ -125,8 +125,8 @@ contract DinoPair is DinoBEP20 {
                 uint256 rootK = SafeMath.sqrt(uint256(_reserve0).mul(_reserve1));
                 uint256 rootKLast = SafeMath.sqrt(_kLast);
                 if (rootK > rootKLast) {
-                    uint256 numerator = totalSupply.mul(rootK.sub(rootKLast)).mul(3);
-                    uint256 denominator = rootK.mul(3).add(rootKLast);
+                    uint256 numerator = totalSupply.mul(rootK.sub(rootKLast));
+                    uint256 denominator = rootK.mul(2).add(rootKLast);
                     uint256 liquidity = numerator / denominator;
                     if (liquidity > 0) _mint(feeTo, liquidity);
                 }
