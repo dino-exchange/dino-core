@@ -20,8 +20,7 @@ module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
     throw Error("No DinoToken!")
   }
 
-  // const startBlock = 9025730;
-  const startBlock = 7916660;
+  const startBlock = chainId === "97" ? 9025730 : 7916660;
 
   await deploy('DinoTreasury', {
     from: deployer,

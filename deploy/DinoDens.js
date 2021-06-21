@@ -21,8 +21,7 @@ module.exports = async function ({ getNamedAccounts, deployments, ethers }) {
   }
 
   const treasuryAddress = (await deployments.get("DinoTreasury")).address
-  // const startBlock = 9025730;
-  const startBlock = 7916660;
+  const startBlock = chainId === "97" ? 9025730 : 7916660;
 
   await deploy("DinoDens", {
     from: deployer,

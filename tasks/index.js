@@ -62,3 +62,12 @@ task("querypool", "Query pool info")
 			console.log(await dens.userInfo(pid, account))
 		}
 	})
+
+task("enablestake", "Enable DINO pool")
+	.addParam("point", "Allocation points assigned to DINO pool")
+	.setAction(async ({ point }, hre) => {
+		const densAddress = (await hre.deployments.get("DinoDens")).address
+		console.log('Dens Address:', densAddress)
+		const dens = await hre.ethers.getContractAt('DinoDens', densAddress)
+		await dens.set(0, point, true)
+	})
