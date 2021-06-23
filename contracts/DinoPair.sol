@@ -239,7 +239,11 @@ contract DinoPair is DinoBEP20 {
         _update(IBEP20(token0).balanceOf(address(this)), IBEP20(token1).balanceOf(address(this)), reserve0, reserve1);
     }
 
-    function _appendPriceLog(uint256 price0Cumulative, uint256 price1Cumulative, uint32 blockTimestamp) private {
+    function _appendPriceLog(
+        uint256 price0Cumulative,
+        uint256 price1Cumulative,
+        uint32 blockTimestamp
+    ) private {
         if (priceLog.length < MAX_PRICE_HISTORY) {
             priceLog.push(PriceLog(price0Cumulative, price1Cumulative, blockTimestamp));
         } else {

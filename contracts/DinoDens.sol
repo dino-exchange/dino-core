@@ -74,7 +74,7 @@ contract DinoDens is Ownable {
     uint16 public constant MAXIMUM_REFERRAL_BP = 2000;
     // Referral Bonus in basis points. Initially set to 2%
     uint256 public refBonusBP = 200;
-    uint256 public accBP = 9800; 
+    uint256 public accBP = 9800;
     // Referral Mapping
     mapping(address => address) public referrers; // account_address -> referrer_address
     mapping(address => uint256) public referredCount; // referrer_address -> num_of_referred
@@ -227,9 +227,13 @@ contract DinoDens is Ownable {
     }
 
     // Deposit LP tokens to DinoDens for DINO allocation with referral.
-    function depositWithReferrer(uint256 _pid, uint256 _amount, address _referrer) public {
+    function depositWithReferrer(
+        uint256 _pid,
+        uint256 _amount,
+        address _referrer
+    ) public {
         require(_pid != 0, 'deposit DINO by staking');
-        require(_referrer == address(_referrer),"deposit: Invalid referrer address");
+        require(_referrer == address(_referrer), 'deposit: Invalid referrer address');
 
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -330,7 +334,12 @@ contract DinoDens is Ownable {
 
     // Set Referral Address for a user
     function setReferral(address _user, address _referrer) internal {
-        if (_referrer == address(_referrer) && referrers[_user] == address(0) && _referrer != address(0) && _referrer != _user) {
+        if (
+            _referrer == address(_referrer) &&
+            referrers[_user] == address(0) &&
+            _referrer != address(0) &&
+            _referrer != _user
+        ) {
             referrers[_user] = _referrer;
             referredCount[_referrer] += 1;
             emit Referral(_user, _referrer);
@@ -363,8 +372,8 @@ contract DinoDens is Ownable {
     // Initially set to 2%, this this the ability to increase or decrease the Bonus percentage based on
     // community voting and feedback.
     function updateReferralBonusBp(uint256 _newRefBonusBp) public onlyOwner {
-        require(_newRefBonusBp <= MAXIMUM_REFERRAL_BP, "updateReferralBonusBp: invalid referral bonus basis points");
-        require(_newRefBonusBp != refBonusBP, "updateReferralBonusBp: same bonus bp set");
+        require(_newRefBonusBp <= MAXIMUM_REFERRAL_BP, 'updateReferralBonusBp: invalid referral bonus basis points');
+        require(_newRefBonusBp != refBonusBP, 'updateReferralBonusBp: same bonus bp set');
         uint256 previousRefBonusBP = refBonusBP;
         refBonusBP = _newRefBonusBp;
         accBP = 10000 - refBonusBP;

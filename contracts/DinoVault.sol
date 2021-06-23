@@ -72,7 +72,7 @@ contract DinoVault is Ownable, Pausable {
      * @notice Checks if the msg.sender is the admin address
      */
     modifier onlyAdmin() {
-        require(msg.sender == admin, "admin: wut?");
+        require(msg.sender == admin, 'admin: wut?');
         _;
     }
 
@@ -80,8 +80,8 @@ contract DinoVault is Ownable, Pausable {
      * @notice Checks if the msg.sender is a contract or a proxy
      */
     modifier notContract() {
-        require(!_isContract(msg.sender), "contract not allowed");
-        require(msg.sender == tx.origin, "proxy contract not allowed");
+        require(!_isContract(msg.sender), 'contract not allowed');
+        require(msg.sender == tx.origin, 'proxy contract not allowed');
         _;
     }
 
@@ -91,7 +91,7 @@ contract DinoVault is Ownable, Pausable {
      * @param _amount: number of tokens to deposit (in DINO)
      */
     function deposit(uint256 _amount) external whenNotPaused notContract {
-        require(_amount > 0, "Nothing to deposit");
+        require(_amount > 0, 'Nothing to deposit');
 
         uint256 pool = balanceOf();
         token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -149,7 +149,7 @@ contract DinoVault is Ownable, Pausable {
      * @dev Only callable by the contract owner.
      */
     function setAdmin(address _admin) external onlyOwner {
-        require(_admin != address(0), "Cannot be zero address");
+        require(_admin != address(0), 'Cannot be zero address');
         admin = _admin;
     }
 
@@ -158,7 +158,7 @@ contract DinoVault is Ownable, Pausable {
      * @dev Only callable by the contract owner.
      */
     function setTreasury(address _treasury) external onlyOwner {
-        require(_treasury != address(0), "Cannot be zero address");
+        require(_treasury != address(0), 'Cannot be zero address');
         treasury = _treasury;
     }
 
@@ -167,7 +167,7 @@ contract DinoVault is Ownable, Pausable {
      * @dev Only callable by the contract admin.
      */
     function setPerformanceFee(uint256 _performanceFee) external onlyAdmin {
-        require(_performanceFee <= MAX_PERFORMANCE_FEE, "performanceFee cannot be more than MAX_PERFORMANCE_FEE");
+        require(_performanceFee <= MAX_PERFORMANCE_FEE, 'performanceFee cannot be more than MAX_PERFORMANCE_FEE');
         performanceFee = _performanceFee;
     }
 
@@ -176,7 +176,7 @@ contract DinoVault is Ownable, Pausable {
      * @dev Only callable by the contract admin.
      */
     function setCallFee(uint256 _callFee) external onlyAdmin {
-        require(_callFee <= MAX_CALL_FEE, "callFee cannot be more than MAX_CALL_FEE");
+        require(_callFee <= MAX_CALL_FEE, 'callFee cannot be more than MAX_CALL_FEE');
         callFee = _callFee;
     }
 
@@ -185,7 +185,7 @@ contract DinoVault is Ownable, Pausable {
      * @dev Only callable by the contract admin.
      */
     function setWithdrawFee(uint256 _withdrawFee) external onlyAdmin {
-        require(_withdrawFee <= MAX_WITHDRAW_FEE, "withdrawFee cannot be more than MAX_WITHDRAW_FEE");
+        require(_withdrawFee <= MAX_WITHDRAW_FEE, 'withdrawFee cannot be more than MAX_WITHDRAW_FEE');
         withdrawFee = _withdrawFee;
     }
 
@@ -196,7 +196,7 @@ contract DinoVault is Ownable, Pausable {
     function setWithdrawFeePeriod(uint256 _withdrawFeePeriod) external onlyAdmin {
         require(
             _withdrawFeePeriod <= MAX_WITHDRAW_FEE_PERIOD,
-            "withdrawFeePeriod cannot be more than MAX_WITHDRAW_FEE_PERIOD"
+            'withdrawFeePeriod cannot be more than MAX_WITHDRAW_FEE_PERIOD'
         );
         withdrawFeePeriod = _withdrawFeePeriod;
     }
@@ -213,7 +213,7 @@ contract DinoVault is Ownable, Pausable {
      * @notice Withdraw unexpected tokens sent to the Dino Vault
      */
     function inCaseTokensGetStuck(address _token) external onlyAdmin {
-        require(_token != address(token), "Token cannot be same as deposit token");
+        require(_token != address(token), 'Token cannot be same as deposit token');
 
         uint256 amount = IBEP20(_token).balanceOf(address(this));
         IBEP20(_token).safeTransfer(msg.sender, amount);
@@ -273,8 +273,8 @@ contract DinoVault is Ownable, Pausable {
      */
     function withdraw(uint256 _shares) public notContract {
         UserInfo storage user = userInfo[msg.sender];
-        require(_shares > 0, "Nothing to withdraw");
-        require(_shares <= user.shares, "Withdraw amount exceeds balance");
+        require(_shares > 0, 'Nothing to withdraw');
+        require(_shares <= user.shares, 'Withdraw amount exceeds balance');
 
         uint256 currentAmount = (balanceOf().mul(_shares)).div(totalShares);
         user.shares = user.shares.sub(_shares);
