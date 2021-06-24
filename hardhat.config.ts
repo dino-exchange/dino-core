@@ -13,8 +13,7 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: { default: 0 },
     dev: { default: 1 },
-    admin: { default: 2 },
-    treasury: { default: 3 },
+    feeTo: { default: 2 },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,

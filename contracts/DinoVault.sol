@@ -189,7 +189,7 @@ contract DinoVault is Ownable, Pausable {
     function depositAuto(uint256 _amount) external whenNotPaused notContract {
         require(_amount > 0, 'Nothing to deposit');
 
-        uint256 pool = totalPoolBalance;
+        uint256 pool = balanceOf();
         token.safeTransferFrom(msg.sender, address(this), _amount);
         autoPoolPending = autoPoolPending.add(_amount);
         uint256 currentShares = 0;
@@ -205,7 +205,7 @@ contract DinoVault is Ownable, Pausable {
 
         totalShares = totalShares.add(currentShares);
 
-        user.dinoAtLastUserAction = user.shares.mul(pool.add(_amount)).div(totalShares);
+        user.dinoAtLastUserAction = user.shares.mul(balanceOf()).div(totalShares);
         user.lastUserActionTime = block.timestamp;
 
         _earn();
@@ -231,11 +231,10 @@ contract DinoVault is Ownable, Pausable {
         uint256 pending = user.amount.mul(accDinoPerShare).div(1e12).sub(user.rewardDebt);
         if (pending > 0) {
             autoPoolPending = autoPoolPending.add(pending);
-            totalPoolBalance = totalPoolBalance.sub(pending);
         }
         user.rewardDebt = user.amount.mul(accDinoPerShare).div(1e12);
 
-        uint256 bal = autoPoolPending;
+        uint256 bal = available();
         uint256 currentPerformanceFee = bal.mul(performanceFee).div(10000);
         token.safeTransfer(feeTo, currentPerformanceFee);
         autoPoolPending = autoPoolPending.sub(currentPerformanceFee);
@@ -352,7 +351,7 @@ contract DinoVault is Ownable, Pausable {
      */
     function calculateHarvestDinoRewards() external view returns (uint256) {
         uint256 amount = pendingManual(address(this));
-        amount = amount.add(autoPoolPending);
+        amount = amount.add(available());
         uint256 currentCallFee = amount.mul(callFee).div(10000);
 
         return currentCallFee;
@@ -364,7 +363,7 @@ contract DinoVault is Ownable, Pausable {
      */
     function calculateTotalPendingDinoRewards() external view returns (uint256) {
         uint256 amount = pendingManual(address(this));
-        amount = amount.add(autoPoolPending);
+        amount = amount.add(available());
 
         return amount;
     }
@@ -373,7 +372,7 @@ contract DinoVault is Ownable, Pausable {
      * @notice Calculates the price per share
      */
     function getPricePerFullShare() external view returns (uint256) {
-        return totalShares == 0 ? 1e18 : totalPoolBalance.mul(1e18).div(totalShares);
+        return totalShares == 0 ? 1e18 : balanceOf().mul(1e18).div(totalShares);
     }
 
     /**
@@ -385,11 +384,11 @@ contract DinoVault is Ownable, Pausable {
         require(_shares > 0, 'Nothing to withdraw');
         require(_shares <= user.shares, 'Withdraw amount exceeds balance');
 
-        uint256 currentAmount = (totalPoolBalance.mul(_shares)).div(totalShares);
+        uint256 currentAmount = (balanceOf().mul(_shares)).div(totalShares);
         user.shares = user.shares.sub(_shares);
         totalShares = totalShares.sub(_shares);
 
-        uint256 bal = autoPoolPending;
+        uint256 bal = available();
         if (bal < currentAmount) {
             uint256 balWithdraw = currentAmount.sub(bal);
             // Withdraw from manual pool
@@ -405,7 +404,7 @@ contract DinoVault is Ownable, Pausable {
             pool.amount = pool.amount.sub(balWithdraw);
             pool.rewardDebt = pool.amount.mul(accDinoPerShare).div(1e12);
 
-            uint256 balAfter = autoPoolPending;
+            uint256 balAfter = available();
             uint256 diff = balAfter.sub(bal);
             if (diff < balWithdraw) {
                 currentAmount = bal.add(diff);
@@ -420,7 +419,7 @@ contract DinoVault is Ownable, Pausable {
         }
 
         if (user.shares > 0) {
-            user.dinoAtLastUserAction = user.shares.mul(totalPoolBalance).div(totalShares);
+            user.dinoAtLastUserAction = user.shares.mul(balanceOf()).div(totalShares);
         } else {
             user.dinoAtLastUserAction = 0;
         }
@@ -444,10 +443,27 @@ contract DinoVault is Ownable, Pausable {
     }
 
     /**
+     * @notice Custom logic for how much the vault allows to be borrowed
+     * @dev The contract puts 100% of the tokens to work.
+     */
+    function available() public view returns (uint256) {
+        return autoPoolPending;
+    }
+
+    /**
+     * @notice Calculates the total underlying tokens
+     * @dev It includes tokens held by the contract and held in MasterChef
+     */
+    function balanceOf() public view returns (uint256) {
+        UserManualInfo storage pool = userManualInfo[address(this)];
+        return pool.amount.add(autoPoolPending);
+    }
+
+    /**
      * @notice Deposits tokens into DinoDens to earn staking rewards
      */
     function _earn() internal {
-        uint256 bal = autoPoolPending;
+        uint256 bal = available();
         if (bal > 0) {
             UserManualInfo storage user = userManualInfo[address(this)];
             updateManualPool();

@@ -15,7 +15,7 @@ task("initcode", "Prints factory init code pair hash")
 		console.log('INIT_CODE_PAIR_HASH:', await factory.INIT_CODE_PAIR_HASH())
 	})
 
-task("addfund", "Add DinoDens to DinoTreasury")
+task("adddensfund", "Add DinoDens to DinoTreasury")
 	.addParam("point", "Allocation points assigned to Dens")
 	.setAction(async ({ point }, hre) => {
 		const treasuryAddress = (await hre.deployments.get("DinoTreasury")).address
@@ -27,6 +27,20 @@ task("addfund", "Add DinoDens to DinoTreasury")
 		const dens = await hre.ethers.getContractAt('DinoDens', densAddress)
 		
 		await treasury.add(point, dens.address)
+	})
+
+task("addvaultfund", "Add DinoVault to DinoTreasury")
+	.addParam("point", "Allocation points assigned to Dens")
+	.setAction(async ({ point }, hre) => {
+		const treasuryAddress = (await hre.deployments.get("DinoTreasury")).address
+		console.log('Treasury Address:', treasuryAddress)
+		const treasury = await hre.ethers.getContractAt('DinoTreasury', treasuryAddress)
+
+		const vaultAddress = (await hre.deployments.get("DinoVault")).address
+		console.log('Vault Address:', vaultAddress)
+		const vault = await hre.ethers.getContractAt('DinoVault', vaultAddress)
+		
+		await treasury.add(point, vault.address)
 	})
 
 task("senddino", "Send DINO to address")
@@ -61,13 +75,4 @@ task("querypool", "Query pool info")
 		if (account) {
 			console.log(await dens.userInfo(pid, account))
 		}
-	})
-
-task("enablestake", "Enable DINO pool")
-	.addParam("point", "Allocation points assigned to DINO pool")
-	.setAction(async ({ point }, hre) => {
-		const densAddress = (await hre.deployments.get("DinoDens")).address
-		console.log('Dens Address:', densAddress)
-		const dens = await hre.ethers.getContractAt('DinoDens', densAddress)
-		await dens.set(0, point, true)
 	})

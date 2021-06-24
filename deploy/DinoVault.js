@@ -5,7 +5,7 @@ const DinoToken = {
 module.exports = async function ({ getNamedAccounts, deployments }) {
   const { deploy } = deployments
 
-  const { deployer, admin, treasury } = await getNamedAccounts()
+  const { deployer, feeTo } = await getNamedAccounts()
 
   const chainId = await getChainId()
 
@@ -20,15 +20,16 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     throw Error("No DinoToken!")
   }
 
-  const densAddress = (await deployments.get("DinoDens")).address
+  const treasuryAddress = (await deployments.get("DinoTreasury")).address
+  const startBlock = chainId === "97" ? 9025730 : 7916660;
 
   await deploy('DinoVault', {
     from: deployer,
-    args: [dinoTokenAddress, densAddress, admin, treasury],
+    args: [dinoTokenAddress, treasuryAddress, startBlock, feeTo],
     log: true,
     deterministicDeployment: false,
   })
 }
 
 module.exports.tags = ["DinoVault"]
-module.exports.dependencies = ["Mocks", "DinoToken", "DinoDens"]
+module.exports.dependencies = ["Mocks", "DinoToken", "DinoTreasury"]
