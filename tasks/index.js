@@ -30,8 +30,7 @@ task("adddensfund", "Add DinoDens to DinoTreasury")
 	})
 
 task("addvaultfund", "Add DinoVault to DinoTreasury")
-	.addParam("point", "Allocation points assigned to Dens")
-	.setAction(async ({ point }, hre) => {
+	.setAction(async (_args, hre) => {
 		const treasuryAddress = (await hre.deployments.get("DinoTreasury")).address
 		console.log('Treasury Address:', treasuryAddress)
 		const treasury = await hre.ethers.getContractAt('DinoTreasury', treasuryAddress)
@@ -39,8 +38,10 @@ task("addvaultfund", "Add DinoVault to DinoTreasury")
 		const vaultAddress = (await hre.deployments.get("DinoVault")).address
 		console.log('Vault Address:', vaultAddress)
 		const vault = await hre.ethers.getContractAt('DinoVault', vaultAddress)
-		
-		await treasury.add(point, vault.address)
+
+		await treasury.set(0, 55)
+		await treasury.set(1, 3)
+		await treasury.add(2, vault.address)
 	})
 
 task("senddino", "Send DINO to address")

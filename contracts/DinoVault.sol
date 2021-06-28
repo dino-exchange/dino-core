@@ -27,9 +27,6 @@ contract DinoVault is Ownable, Pausable {
         uint256 rewardDebt; // Reward debt. See explanation below.
     }
 
-    IBEP20 public immutable token; // Dino token
-    IDinoTreasury public treasury; // The treasury contract
-
     // For manual pool
     mapping(address => UserManualInfo) public userManualInfo;
 
@@ -66,6 +63,8 @@ contract DinoVault is Ownable, Pausable {
     event Pause();
     event Unpause();
 
+    IBEP20 public token; // Dino token
+    IDinoTreasury public treasury; // The treasury contract
     uint256 public totalPoolBalance;
     uint256 public autoPoolPending;
 
@@ -266,6 +265,24 @@ contract DinoVault is Ownable, Pausable {
     function setFeeTo(address _feeTo) external onlyOwner {
         require(_feeTo != address(0), 'Cannot be zero address');
         feeTo = _feeTo;
+    }
+
+    /**
+     * @notice Sets treasury address
+     * @dev Only callable by the contract owner.
+     */
+    function setTreasury(IDinoTreasury _treasury) external onlyOwner {
+        require(address(_treasury) != address(0), 'Cannot be zero address');
+        treasury = _treasury;
+    }
+
+    /**
+     * @notice Sets token address
+     * @dev Only callable by the contract owner.
+     */
+    function setToken(IBEP20 _token) external onlyOwner {
+        require(address(_token) != address(0), 'Cannot be zero address');
+        token = _token;
     }
 
     /**
