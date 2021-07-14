@@ -258,6 +258,15 @@ contract BnbPricePrediction is Ownable, Pausable {
         genesisLockOnce = true;
     }
 
+    function shouldExecuteRound() public view returns (bool) {
+        return block.number >= rounds[currentEpoch].lockBlock;
+    }
+
+    function currentPriceFromOracle() public view returns (int256) {
+        ( , int256 price, , , ) = oracle.latestRoundData();
+        return price;
+    }
+
     /**
      * @dev Start the next round n, lock price for round n-1, end round n-2
      */

@@ -25,7 +25,7 @@ task("adddensfund", "Add DinoDens to DinoTreasury")
 		const densAddress = (await hre.deployments.get("DinoDens")).address
 		console.log('Dens Address:', densAddress)
 		const dens = await hre.ethers.getContractAt('DinoDens', densAddress)
-		
+
 		await treasury.add(point, dens.address)
 	})
 
@@ -75,5 +75,42 @@ task("querypool", "Query pool info")
 		console.log('Pool Info', await dens.poolInfo(pid))
 		if (account) {
 			console.log(await dens.userInfo(pid, account))
+		}
+	})
+
+const sleep = (ms) =>new Promise(resolve => setTimeout(resolve, ms));
+const waitForRound = async (pp) => {
+	while (true) {
+		await sleep(30000)
+		console.log(`Current price: `, await pp.currentPriceFromOracle())
+		if (await pp.shouldExecuteRound()) return;
+	}
+}
+
+task("genesisround", "Run PricePrediction genesis round")
+	.setAction(async (_args, hre) => {
+		const ppAddress = (await hre.deployments.get("BnbPricePrediction")).address
+		console.log('PricePrediction Address:', ppAddress)
+		const pp = await hre.ethers.getContractAt('BnbPricePrediction', ppAddress)
+		
+		console.log('genesisStartRound')
+		await pp.genesisStartRound()
+		console.log("waiting for genesis round")
+		await waitForRound(pp);
+		console.log('genesisLockRound')
+		await pp.genesisLockRound()
+	})
+
+task("executeround", "Execute PricePrediction current round")
+	.setAction(async (_args, hre) => {
+		const ppAddress = (await hre.deployments.get("BnbPricePrediction")).address
+		console.log('PricePrediction Address:', ppAddress)
+		const pp = await hre.ethers.getContractAt('BnbPricePrediction', ppAddress)
+		
+		while (true) {
+			console.log("waiting for current round")
+			await waitForRound(pp);
+			console.log('executeRound')
+			await pp.executeRound()
 		}
 	})

@@ -14,6 +14,8 @@ const config: HardhatUserConfig = {
     deployer: { default: 0 },
     dev: { default: 1 },
     feeTo: { default: 2 },
+    admin: { default: 3 },
+    operator: { default: 4 }
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
