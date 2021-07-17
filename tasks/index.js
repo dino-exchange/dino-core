@@ -81,7 +81,7 @@ task("querypool", "Query pool info")
 const sleep = (ms) =>new Promise(resolve => setTimeout(resolve, ms));
 const waitForRound = async (pp) => {
 	while (true) {
-		await sleep(30000)
+		await sleep(10000)
 		console.log(`Current price: `, await pp.currentPriceFromOracle())
 		if (await pp.shouldExecuteRound()) return;
 	}
@@ -89,10 +89,30 @@ const waitForRound = async (pp) => {
 
 task("genesisround", "Run PricePrediction genesis round")
 	.setAction(async (_args, hre) => {
-		const ppAddress = (await hre.deployments.get("BnbPricePrediction")).address
-		console.log('PricePrediction Address:', ppAddress)
-		const pp = await hre.ethers.getContractAt('BnbPricePrediction', ppAddress)
+		const ppAddress = (await hre.deployments.get("DinoPrediction")).address
+		console.log('Prediction Address:', ppAddress)
+		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
 		
+		console.log('genesisStartRound')
+		await pp.genesisStartRound()
+		console.log("waiting for genesis round")
+		await waitForRound(pp);
+		console.log('genesisLockRound')
+		await pp.genesisLockRound()
+	})
+
+task("resetprediction", "Reset PricePrediction")
+	.setAction(async (_args, hre) => {
+		const ppAddress = (await hre.deployments.get("DinoPrediction")).address
+		console.log('Prediction Address:', ppAddress)
+		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
+		
+		console.log('pause')
+		await pp.pause()
+		await sleep(10000)
+		console.log('unpause')
+		await pp.unpause()
+		await sleep(10000)
 		console.log('genesisStartRound')
 		await pp.genesisStartRound()
 		console.log("waiting for genesis round")
@@ -103,9 +123,9 @@ task("genesisround", "Run PricePrediction genesis round")
 
 task("executeround", "Execute PricePrediction current round")
 	.setAction(async (_args, hre) => {
-		const ppAddress = (await hre.deployments.get("BnbPricePrediction")).address
-		console.log('PricePrediction Address:', ppAddress)
-		const pp = await hre.ethers.getContractAt('BnbPricePrediction', ppAddress)
+		const ppAddress = (await hre.deployments.get("DinoPrediction")).address
+		console.log('Prediction Address:', ppAddress)
+		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
 		
 		while (true) {
 			console.log("waiting for current round")

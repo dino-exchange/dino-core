@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.6.12;
 
+import './libraries/SafeBEP20.sol';
 import './libraries/SafeMath.sol';
 import './libraries/Ownable.sol';
 import './libraries/Pausable.sol';
+import './interfaces/IBEP20.sol';
 
 interface AggregatorV3Interface {
     function decimals() external view returns (uint8);
@@ -38,7 +40,8 @@ interface AggregatorV3Interface {
         );
 }
 
-contract BnbPricePrediction is Ownable, Pausable {
+contract DinoPrediction is Ownable, Pausable {
+    using SafeBEP20 for IBEP20;
     using SafeMath for uint256;
 
     struct Round {
@@ -63,6 +66,8 @@ contract BnbPricePrediction is Ownable, Pausable {
         uint256 amount;
         bool claimed; // default false
     }
+
+    IBEP20 public token; // Dino token
 
     mapping(uint256 => Round) public rounds;
     mapping(uint256 => mapping(address => BetInfo)) public ledger;
@@ -104,6 +109,7 @@ contract BnbPricePrediction is Ownable, Pausable {
     event Unpause(uint256 epoch);
 
     constructor(
+        IBEP20 _token,
         AggregatorV3Interface _oracle,
         address _adminAddress,
         address _operatorAddress,
@@ -112,6 +118,7 @@ contract BnbPricePrediction is Ownable, Pausable {
         uint256 _minBetAmount,
         uint256 _oracleUpdateAllowance
     ) public {
+        token = _token;
         oracle = _oracle;
         adminAddress = _adminAddress;
         operatorAddress = _operatorAddress;
@@ -290,13 +297,14 @@ contract BnbPricePrediction is Ownable, Pausable {
     /**
      * @dev Bet bear position
      */
-    function betBear() external payable whenNotPaused notContract {
+    function betBear(uint256 amount) external whenNotPaused notContract {
         require(_bettable(currentEpoch), 'Round not bettable');
-        require(msg.value >= minBetAmount, 'Bet amount must be greater than minBetAmount');
+        require(amount >= minBetAmount, 'Bet amount must be greater than minBetAmount');
         require(ledger[currentEpoch][msg.sender].amount == 0, 'Can only bet once per round');
 
+        token.safeTransferFrom(msg.sender, address(this), amount);
+
         // Update round data
-        uint256 amount = msg.value;
         Round storage round = rounds[currentEpoch];
         round.totalAmount = round.totalAmount.add(amount);
         round.bearAmount = round.bearAmount.add(amount);
@@ -313,13 +321,14 @@ contract BnbPricePrediction is Ownable, Pausable {
     /**
      * @dev Bet bull position
      */
-    function betBull() external payable whenNotPaused notContract {
+    function betBull(uint256 amount) external whenNotPaused notContract {
         require(_bettable(currentEpoch), 'Round not bettable');
-        require(msg.value >= minBetAmount, 'Bet amount must be greater than minBetAmount');
+        require(amount >= minBetAmount, 'Bet amount must be greater than minBetAmount');
         require(ledger[currentEpoch][msg.sender].amount == 0, 'Can only bet once per round');
 
+        token.safeTransferFrom(msg.sender, address(this), amount);
+
         // Update round data
-        uint256 amount = msg.value;
         Round storage round = rounds[currentEpoch];
         round.totalAmount = round.totalAmount.add(amount);
         round.bullAmount = round.bullAmount.add(amount);
@@ -356,7 +365,7 @@ contract BnbPricePrediction is Ownable, Pausable {
 
         BetInfo storage betInfo = ledger[epoch][msg.sender];
         betInfo.claimed = true;
-        _safeTransferBNB(address(msg.sender), reward);
+        token.safeTransfer(address(msg.sender), reward);
 
         emit Claim(msg.sender, epoch, reward);
     }
@@ -368,7 +377,7 @@ contract BnbPricePrediction is Ownable, Pausable {
     function claimTreasury() external onlyAdmin {
         uint256 currentTreasuryAmount = treasuryAmount;
         treasuryAmount = 0;
-        _safeTransferBNB(adminAddress, currentTreasuryAmount);
+        token.safeTransfer(adminAddress, currentTreasuryAmount);
 
         emit ClaimTreasury(currentTreasuryAmount);
     }
@@ -544,11 +553,6 @@ contract BnbPricePrediction is Ownable, Pausable {
         require(roundId > oracleLatestRoundId, 'Oracle update roundId must be larger than oracleLatestRoundId');
         oracleLatestRoundId = uint256(roundId);
         return price;
-    }
-
-    function _safeTransferBNB(address to, uint256 value) internal {
-        (bool success, ) = to.call{gas: 23000, value: value}('');
-        require(success, 'TransferHelper: BNB_TRANSFER_FAILED');
     }
 
     function _isContract(address addr) internal view returns (bool) {
