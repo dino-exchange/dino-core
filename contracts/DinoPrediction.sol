@@ -391,13 +391,14 @@ contract DinoPrediction is Ownable, Pausable {
         uint256 size
     ) external view returns (uint256[] memory, uint256) {
         uint256 length = size;
-        if (length > userRounds[user].length - cursor) {
-            length = userRounds[user].length - cursor;
+        uint256 userRoundsLength = userRounds[user].length;
+        if (length > userRoundsLength - cursor) {
+            length = userRoundsLength - cursor;
         }
 
         uint256[] memory values = new uint256[](length);
         for (uint256 i = 0; i < length; i++) {
-            values[i] = userRounds[user][cursor + i];
+            values[i] = userRounds[user][userRoundsLength - 1 - cursor - i];
         }
 
         return (values, cursor + length);
