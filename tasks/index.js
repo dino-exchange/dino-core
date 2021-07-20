@@ -86,19 +86,44 @@ const waitForRound = async (pp) => {
 		if (await pp.shouldExecuteRound()) return;
 	}
 }
+const genesisround = async (pp) => {
+	console.log('genesisStartRound')
+	await pp.genesisStartRound()
+	console.log("waiting for genesis round")
+	await waitForRound(pp);
+	console.log('genesisLockRound')
+	await pp.genesisLockRound()
+}
+const resetprediction = async (pp) => {
+	console.log('pause')
+	await pp.pause()
+	await sleep(10000)
+	console.log('unpause')
+	await pp.unpause()
+	await sleep(10000)
+}
+const executeround = async (pp) => {
+	console.log("waiting for current round")
+	await waitForRound(pp);
+	console.log('executeRound')
+	try {
+		await pp.executeRound()
+	} catch (err) {
+		if (err.error && err.error.message && err.error.message.includes("Can only lock round within bufferBlocks")) {
+			await resetprediction(pp)
+			await genesisround(pp)
+		} else {
+			throw err
+		}
+	}
+}
 
 task("genesisround", "Run PricePrediction genesis round")
 	.setAction(async (_args, hre) => {
 		const ppAddress = (await hre.deployments.get("DinoPrediction")).address
 		console.log('Prediction Address:', ppAddress)
 		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
-		
-		console.log('genesisStartRound')
-		await pp.genesisStartRound()
-		console.log("waiting for genesis round")
-		await waitForRound(pp);
-		console.log('genesisLockRound')
-		await pp.genesisLockRound()
+		await genesisround(pp)
 	})
 
 task("resetprediction", "Reset PricePrediction")
@@ -106,19 +131,8 @@ task("resetprediction", "Reset PricePrediction")
 		const ppAddress = (await hre.deployments.get("DinoPrediction")).address
 		console.log('Prediction Address:', ppAddress)
 		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
-		
-		console.log('pause')
-		await pp.pause()
-		await sleep(10000)
-		console.log('unpause')
-		await pp.unpause()
-		await sleep(10000)
-		console.log('genesisStartRound')
-		await pp.genesisStartRound()
-		console.log("waiting for genesis round")
-		await waitForRound(pp);
-		console.log('genesisLockRound')
-		await pp.genesisLockRound()
+		await resetprediction(pp)
+		await genesisround(pp)
 	})
 
 task("executeround", "Execute PricePrediction current round")
@@ -128,9 +142,6 @@ task("executeround", "Execute PricePrediction current round")
 		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
 		
 		while (true) {
-			console.log("waiting for current round")
-			await waitForRound(pp);
-			console.log('executeRound')
-			await pp.executeRound()
+			await executeround(pp)
 		}
 	})
