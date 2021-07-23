@@ -78,28 +78,28 @@ task("querypool", "Query pool info")
 		}
 	})
 
-const sleep = (ms) =>new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const waitForRound = async (pp) => {
 	while (true) {
 		console.log('Wait for round')
 		await sleep(10000)
-		try { if (await pp.shouldExecuteRound()) return; } catch (err) {}
+		try { if (await pp.shouldExecuteRound()) return; } catch (err) { }
 	}
 }
 const genesisround = async (pp) => {
 	console.log('genesisStartRound')
-	try { await pp.genesisStartRound() } catch (err) {}
+	try { await pp.genesisStartRound() } catch (err) { }
 	console.log('waiting for genesis round')
 	await waitForRound(pp);
 	console.log('genesisLockRound')
-	try { await pp.genesisLockRound() } catch (err) {}
+	try { await pp.genesisLockRound() } catch (err) { }
 }
 const resetprediction = async (pp) => {
 	console.log('pause')
-	try { await pp.pause() } catch (err) {}
+	try { await pp.pause() } catch (err) { }
 	await sleep(10000)
 	console.log('unpause')
-	try { await pp.unpause() } catch (err) {}
+	try { await pp.unpause() } catch (err) { }
 	await sleep(10000)
 }
 const executeround = async (pp) => {
@@ -109,7 +109,9 @@ const executeround = async (pp) => {
 	try {
 		await pp.executeRound()
 	} catch (err) {
-		if (err.error && err.error.message && err.error.message.includes("Can only lock round within bufferBlocks")) {
+		if (err.error && err.error.message &&
+			(err.error.message.includes("Can only lock round within bufferBlocks") ||
+				err.error.message.includes("Can only run after genesisStartRound and genesisLockRound is triggered"))) {
 			await resetprediction(pp)
 			await genesisround(pp)
 		} else {
@@ -140,7 +142,7 @@ task("executeround", "Execute PricePrediction current round")
 		const ppAddress = (await hre.deployments.get("DinoPrediction")).address
 		console.log('Prediction Address:', ppAddress)
 		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
-		
+
 		while (true) {
 			await executeround(pp)
 		}
