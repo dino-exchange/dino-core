@@ -81,25 +81,25 @@ task("querypool", "Query pool info")
 const sleep = (ms) =>new Promise(resolve => setTimeout(resolve, ms));
 const waitForRound = async (pp) => {
 	while (true) {
+		console.log('Wait for round')
 		await sleep(10000)
-		console.log(`Current price: `, await pp.currentPriceFromOracle())
-		if (await pp.shouldExecuteRound()) return;
+		try { if (await pp.shouldExecuteRound()) return; } catch (err) {}
 	}
 }
 const genesisround = async (pp) => {
 	console.log('genesisStartRound')
-	await pp.genesisStartRound()
-	console.log("waiting for genesis round")
+	try { await pp.genesisStartRound() } catch (err) {}
+	console.log('waiting for genesis round')
 	await waitForRound(pp);
 	console.log('genesisLockRound')
-	await pp.genesisLockRound()
+	try { await pp.genesisLockRound() } catch (err) {}
 }
 const resetprediction = async (pp) => {
 	console.log('pause')
-	await pp.pause()
+	try { await pp.pause() } catch (err) {}
 	await sleep(10000)
 	console.log('unpause')
-	await pp.unpause()
+	try { await pp.unpause() } catch (err) {}
 	await sleep(10000)
 }
 const executeround = async (pp) => {
