@@ -82,8 +82,8 @@ contract DinoPrediction is Ownable, Pausable {
     uint256 public oracleLatestRoundId;
 
     uint256 public constant TOTAL_RATE = 100; // 100%
-    uint256 public rewardRate = 90; // 90%
-    uint256 public treasuryRate = 10; // 10%
+    uint256 public rewardRate = 97; // 97%
+    uint256 public treasuryRate = 3; // 3%
     uint256 public minBetAmount;
     uint256 public oracleUpdateAllowance; // seconds
 

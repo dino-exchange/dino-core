@@ -12,7 +12,7 @@
     "testnet:export": "hardhat --network bscTestnet export --export exports/bscTestnet.json",
     "testnet:verify": "hardhat --network bscTestnet etherscan-verify --solc-input",
     "compile": "hardhat compile",
-    "start": "hardhat --network bscTestnet executeround",
+    "start": "hardhat --network bsc executeround",
     "test": "hardhat test"
   },
   "license": "MIT",
