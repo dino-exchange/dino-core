@@ -81,25 +81,33 @@ task("querypool", "Query pool info")
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const waitForRound = async (pp) => {
 	while (true) {
-		console.log('Wait for round')
-		await sleep(10000)
+		console.log('wait for round')
+		await sleep(5000)
 		try { if (await pp.shouldExecuteRound()) return; } catch (err) { }
 	}
 }
 const genesisround = async (pp) => {
 	console.log('genesisStartRound')
-	try { await pp.genesisStartRound() } catch (err) { }
+	try { await pp.genesisStartRound() } catch (err) {
+		console.log('genesisStartRound error', err)
+	}
 	console.log('waiting for genesis round')
 	await waitForRound(pp);
 	console.log('genesisLockRound')
-	try { await pp.genesisLockRound() } catch (err) { }
+	try { await pp.genesisLockRound() } catch (err) {
+		console.log('genesisLockRound error', err)
+	}
 }
 const resetprediction = async (pp) => {
 	console.log('pause')
-	try { await pp.pause() } catch (err) { }
+	try { await pp.pause() } catch (err) {
+		console.log('pause error', err)
+	}
 	await sleep(10000)
 	console.log('unpause')
-	try { await pp.unpause() } catch (err) { }
+	try { await pp.unpause() } catch (err) {
+		console.log('unpause error', err)
+	}
 	await sleep(10000)
 }
 const executeround = async (pp) => {
@@ -110,8 +118,7 @@ const executeround = async (pp) => {
 		await pp.executeRound()
 	} catch (err) {
 		if (err.error && err.error.message &&
-			(err.error.message.includes("Can only lock round within bufferBlocks") ||
-				err.error.message.includes("Can only run after genesisStartRound and genesisLockRound is triggered"))) {
+			(err.error.message.includes("Can only") || err.error.message.includes("Pausable"))) {
 			await resetprediction(pp)
 			await genesisround(pp)
 		} else {
@@ -126,6 +133,15 @@ task("genesisround", "Run PricePrediction genesis round")
 		console.log('Prediction Address:', ppAddress)
 		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
 		await genesisround(pp)
+	})
+
+task("updateinterval", "Update PricePrediction interval")
+	.addParam("block", "new interval block")
+	.setAction(async ({ block }, hre) => {
+		const ppAddress = (await hre.deployments.get("DinoPrediction")).address
+		console.log('Prediction Address:', ppAddress)
+		const pp = await hre.ethers.getContractAt('DinoPrediction', ppAddress)
+		await pp.setIntervalBlocks(block)
 	})
 
 task("resetprediction", "Reset PricePrediction")
